@@ -59,7 +59,9 @@ const Signup = () => {
       if (response.ok) {
         localStorage.setItem("MMK_U_user_id", data.user_id);
         localStorage.setItem("MMK_U_name", data.name);
-            toast.success("successfully signed up.");
+        localStorage.setItem("MMK_U_email", data.email);
+
+        toast.success("successfully signed up.");
 
         navigate("/home");
       } else {
@@ -117,7 +119,7 @@ const Signup = () => {
                 />
               </div>
 
-<div>
+              <div>
                 <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
@@ -129,7 +131,7 @@ const Signup = () => {
                   onChange={handleChange}
                   placeholder="john@example.com"
                 />
-              
+
 
               </div>
 
@@ -178,7 +180,7 @@ const Signup = () => {
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </div>
-  <Button
+                <Button
                   type="button"
                   className="mt-2 bg-mmk-purple/70"
                   onClick={async () => {
@@ -206,7 +208,7 @@ const Signup = () => {
 
 
 
-              
+
 
 
 

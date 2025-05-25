@@ -16,15 +16,53 @@ import {
 import axios from "axios";
 
 const Dashboard = () => {
-  const location = useLocation(); 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // State to track active main menu item
   const [activeMenuItem, setActiveMenuItem] = useState("dashboard");
+
+  // Dropdown visibility states
   const [showEventsDropdown, setShowEventsDropdown] = useState(false);
   const [showProgramsDropdown, setShowProgramsDropdown] = useState(false);
-  const navigate = useNavigate();
+
+  // Admin name from session/localStorage
   const [adminName, setAdminName] = useState<string | null>(null);
 
+  // Helper functions to check if current route belongs to dropdown groups
+  const isEventsActive = () => {
+    return ["/admin_events", "/manage_events", "/manage_payment_events"].includes(location.pathname);
+  };
+
+  const isProgramsActive = () => {
+    return ["/admin_programs", "/manage_programs"].includes(location.pathname);
+  };
+
   useEffect(() => {
+
     const path = location.pathname;
+
+
+    if (isEventsActive()) {
+      setActiveMenuItem("events");
+      setShowEventsDropdown(true);
+    } else {
+      setShowEventsDropdown(false);
+    }
+
+    if (isProgramsActive()) {
+      setActiveMenuItem("programs");
+      setShowProgramsDropdown(true);
+    } else {
+      setShowProgramsDropdown(false);
+    }
+
+
+
+
+
+
+
     if (path === "/admin_events") {
       setActiveMenuItem("events");
     } else if (path === "/admin_programs") {
@@ -44,6 +82,10 @@ const Dashboard = () => {
     
      else if (path === "/manage_programs") {
       setActiveMenuItem("programs");
+    }
+    
+    else if (path === "/manage_payment_events") {
+      setActiveMenuItem("manage_payment_events");
     }
     
     
@@ -154,9 +196,32 @@ const Dashboard = () => {
                     Manage Events
                   </button>
                 </Link>
+
+                  <Link to="/manage_payment_events">
+                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
+                    Manage User Payments
+                  </button>
+                </Link>
+
+
               </div>
+
+
+
+
+
+
+
             )}
           </div>
+
+
+
+
+
+
+
+
 
           <div>
             <button

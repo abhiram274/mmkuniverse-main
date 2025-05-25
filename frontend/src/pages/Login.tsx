@@ -60,6 +60,8 @@ const Login = () => {
       if (response.ok) {
         localStorage.setItem("MMK_U_user_id", data.user_id);
         localStorage.setItem("MMK_U_name", data.name);
+        localStorage.setItem("MMK_U_email", data.email);
+
         toast.success("Logged in successfully");
         navigate("/home");
       } else {

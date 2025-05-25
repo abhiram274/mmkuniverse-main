@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const eventsRouter = require("./routes/events");
 const programsRouter = require("./routes/programs");
+const paymentRouter = require("./routes/payments");
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.use('/events', eventsRouter);
 
 app.use('/programs',programsRouter);
 
-
+app.use('/payments',paymentRouter);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)

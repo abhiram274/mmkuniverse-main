@@ -47,6 +47,9 @@ router.post('/send-otp', async (req, res) => {
 // Generate custom user_id like MMK_U_1, MMK_U_2...
 const generateUserId = (id) => `MMK_U_${id}`;
 
+
+
+
 // Signup
 router.post('/signup', async (req, res) => {
   try {
@@ -80,7 +83,7 @@ router.post('/signup', async (req, res) => {
     await db.query('UPDATE users SET user_id = ? WHERE id = ?', [userId, result.insertId]);
 
     req.session.user = { id: result.insertId, name, email,phone, user_id: userId };
-    return res.status(200).json({ message: 'User registered', user_id: userId, name });
+    return res.status(200).json({ message: 'User registered', user_id: userId, name, email });
   } catch (err) {
     console.error('Signup error:', err); // ✅ Still logs the error
     return res.status(500).json({ error: 'Server error during registration' });
@@ -108,7 +111,7 @@ router.post('/login', async (req, res) => {
       user_id: user.user_id,
     };
 
-    return res.json({ message: 'Login successful', user_id: user.user_id, name: user.name });
+    return res.json({ message: 'Login successful', user_id: user.user_id, name: user.name, email: user.email });
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Server error during login' });

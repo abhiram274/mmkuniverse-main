@@ -4,6 +4,7 @@ const db = require("../db");
 const multer = require("multer");
 const path = require("path");
 
+
 // Multer setup
 const storage = multer.diskStorage({
   destination: "uploads/",
@@ -95,6 +96,37 @@ await db.query(
 
 
 
+// In routes/events.js or a new route file
+router.get("/check-attendance", async (req, res) => {
+  const { userId, eventId } = req.query;
+
+  if (!userId || !eventId) {
+    return res.status(400).json({ error: "Missing userId or eventId" });
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
+      [userId, eventId]
+    );
+
+    if (rows.length > 0) {
+      res.json({ alreadyJoined: true });
+    } else {
+      res.json({ alreadyJoined: false });
+    }
+  } catch (err) {
+    console.error("Error checking attendance:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
+
+
+
 
 // Update event
 router.put("/:id", upload.single("image"), async (req, res) => {
@@ -132,54 +164,6 @@ router.delete("/:id", async (req, res) => {
     res.json({ message: "Event deleted" });
   } catch (err) {
     console.error("Error in DELETE /events/:id:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-
-
-
-
-
-
-// Join an event
-router.post("/:id/join-event", async (req, res) => {
-  const { id: eventId } = req.params;
-  const { userId } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
-
-  try {
-    // Check if already joined
-    const [existing] = await db.query(
-      'SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?',
-      [userId, eventId]
-    );
-
-    if (existing.length > 0) {
-      return res.status(400).json({ error: "User already joined the event" });
-    }
-
-    // Insert into event_attendees
-    await db.query(
-      `INSERT INTO event_attendees (user_id, event_id) VALUES (?, ?)`,
-      [userId, eventId]
-    );
-
-    // Update attendees count
-    await db.query(
-      `UPDATE events SET attendees = (
-        SELECT COUNT(*) FROM event_attendees WHERE event_id = ?
-      ) WHERE id = ?`,
-      [eventId, eventId]
-    );
-
-    res.json({ message: "User joined the event" });
-  } catch (err) {
-    console.error("Error in POST /events/:id/join-event", err);
     res.status(500).json({ error: err.message });
   }
 });

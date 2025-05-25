@@ -150,74 +150,117 @@ const Events = () => {
 
 
 
-  //handle join
-  const handleJoinEvent = async (eventId: string) => {
+  // //handle join
+  // const handleJoinEvent = async (eventId: string) => {
 
+  //   const storedId = localStorage.getItem("MMK_U_user_id");
+  //   const storedUserName = localStorage.getItem("MMK_U_user_name");
+  //   console.log("Stored ID:", storedId); // Debugging line
+
+  //  if (!storedId || !storedUserName) {
+  //   toast.error("Please log in to join.");
+  //   return;
+  // }
+
+  //   const userId = parseInt(storedId.replace("MMK_U_", ""), 10); // ✅ Convert to number
+  //   const userName = storedUserName;
+
+  //   if (isNaN(userId)) {
+  //     toast.error("Invalid user ID.");
+  //     return;
+  //   }
+
+
+  //   try {
+  //     // const userJson = localStorage.getItem("user");
+  //     // if (!userJson) {
+  //     //   alert("Please log in to join an event.");
+  //     //   return;
+  //     // }
+  //     // const user = JSON.parse(userJson);
+
+  //     const res = await fetch(`http://localhost:5000/events/${eventId}/join-event`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ userId: userId }),
+  //     });
+
+  //     if (res.ok) {
+  //       toast.success("Joined successfully!");
+  //       // navigate('/my_profile');
+
+  //       setEvents((prev) =>
+  //         prev.map((e) =>
+  //           e.id === eventId ? { ...e, attendees: e.attendees + 1, isEnrolled: true } : e
+  //         )
+  //       );
+  //     }
+
+
+  //     else {
+  //       const errorData = await res.json();
+
+  //       if (errorData.message === "User already joined the event") {
+  //         toast.error("You are already joined in this program.");
+  //       } else {
+  //         toast.error("Joining  failed.");
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("Joining in an event error:", err);
+  //     toast.error("Joining failed.");
+  //   }
+
+
+  // };
+
+
+  //handle join event
+
+  const handleJoinEvent = async (eventId: string, eventName: string,) => {
     const storedId = localStorage.getItem("MMK_U_user_id");
-    const storedUserName = localStorage.getItem("MMK_U_user_name");
-    console.log("Stored ID:", storedId); // Debugging line
+    const storedUserName = localStorage.getItem("MMK_U_name");
+    const storedUserEmail = localStorage.getItem("MMK_U_email");
 
-   if (!storedId || !storedUserName) {
-    toast.error("Please log in to join.");
-    return;
-  }
-
-    const userId = parseInt(storedId.replace("MMK_U_", ""), 10); // ✅ Convert to number
-    const userName = storedUserName;
-
-    if (isNaN(userId)) {
-      toast.error("Invalid user ID.");
+    console.log(storedUserName)
+    console.log(storedUserEmail);
+    if (!storedId || !storedUserName || !storedUserEmail) {
+      toast.error("Please log in to join.");
       return;
     }
 
 
+
+    // const userId = parseInt(storedId.replace("MMK_U_", ""), 10);
+    const userId = storedId; // keep as string "MMK_U_1234"
+    const userName = storedUserName;
+    const userEmail = storedUserEmail;
+
+
     try {
-      // const userJson = localStorage.getItem("user");
-      // if (!userJson) {
-      //   alert("Please log in to join an event.");
-      //   return;
-      // }
-      // const user = JSON.parse(userJson);
+      const res = await fetch(
+        `http://localhost:5000/events/check-attendance?userId=${userId}&eventId=${eventId}`
+      );
+      const data = await res.json();
 
-      const res = await fetch(`http://localhost:5000/events/${eventId}/join-event`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: userId }),
-      });
-
-      if (res.ok) {
-        toast.success("Joined successfully!");
-        // navigate('/my_profile');
-
-        setEvents((prev) =>
-          prev.map((e) =>
-            e.id === eventId ? { ...e, attendees: e.attendees + 1, isEnrolled: true } : e
-          )
-        );
+      if (data.alreadyJoined) {
+        toast.info("You have already joined this event.");
+        return;
       }
 
 
-      else {
-        const errorData = await res.json();
+      localStorage.setItem("MMK_E_event_id", eventId);
+      localStorage.setItem("MMK_E_event_name", eventName);
+      console.log(eventId);
+      console.log(eventName);
 
-        if (errorData.message === "User already joined the event") {
-          toast.error("You are already joined in this program.");
-        } else {
-          toast.error("Joining  failed.");
-        }
-      }
-    } catch (err) {
-      console.error("Joining in an event error:", err);
-      toast.error("Joining failed.");
+        navigate("/join-event-payment");
+    
+    } catch (error) {
+      console.error("Error checking join status:", error);
+      toast.error("Something went wrong. Please try again.");
     }
-
-
   };
-
-
-
-
-
 
 
 
@@ -337,9 +380,9 @@ const Events = () => {
                           key={index}
                           onClick={() => handleDateSelect(index)}
                           className={`flex-shrink-0 py-1 px-3 rounded-full border ${selectedDate &&
-                              formatDateToYMD(selectedDate) === formatDateToYMD(date)
-                              ? "bg-mmk-purple border-mmk-purple text-white"
-                              : "border-white/20 hover:border-mmk-purple/60 hover:bg-mmk-purple/10"
+                            formatDateToYMD(selectedDate) === formatDateToYMD(date)
+                            ? "bg-mmk-purple border-mmk-purple text-white"
+                            : "border-white/20 hover:border-mmk-purple/60 hover:bg-mmk-purple/10"
                             }`}
                         >
                           {date.toLocaleDateString("en-US", {
@@ -448,7 +491,7 @@ const Events = () => {
                     </Button> */}
                     <Button
                       className="bg-mmk-purple hover:bg-mmk-purple/90 text-white"
-                      onClick={() => handleJoinEvent(event.id)}
+                      onClick={() => handleJoinEvent(event.id, event.title)}
                       disabled={event.isEnrolled}
                     >
                       {event.isEnrolled ? "Joined" : "Join Now"}

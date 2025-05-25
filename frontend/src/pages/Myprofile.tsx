@@ -20,7 +20,7 @@ type Event = {
   completed?: boolean;
 };
 
-const  MyProfile = () => {
+const MyProfile = () => {
   const [joinedEvents, setJoinedEvents] = useState<Event[]>([]);
   const [joinedPrograms, setJoinedPrograms] = useState<Event[]>([]);
   const [activeTab, setActiveTab] = useState<"events" | "programs">("events");
@@ -29,24 +29,26 @@ const  MyProfile = () => {
 
   useEffect(() => {
     const fetchJoinedEvents = async () => {
+      const userId = localStorage.getItem("MMK_U_user_id");
       const res = await fetch(`http://localhost:5000/events/user-events/${userId}`);
       const data = await res.json();
       const withImageUrls = data.map((event: Event) => ({
         ...event,
         imageUrl: event.image ? `http://localhost:5000/uploads/${event.image}` : null,
-completed: String(event.completed) === "true" || String(event.completed) === "1",
+        completed: String(event.completed) === "true" || String(event.completed) === "1",
 
       }));
       setJoinedEvents(withImageUrls);
     };
 
     const fetchJoinedPrograms = async () => {
+      const userId = localStorage.getItem("MMK_U_user_id");
       const res = await fetch(`http://localhost:5000/programs/user-programs/${userId}`);
       const data = await res.json();
       const withImageUrls = data.map((program: Event) => ({
         ...program,
         imageUrl: program.image ? `http://localhost:5000/uploads/${program.image}` : null,
-completed: String(program.completed) === "true" || String(program.completed) === "1",
+        completed: String(program.completed) === "true" || String(program.completed) === "1",
 
       }));
       setJoinedPrograms(withImageUrls);
@@ -61,6 +63,9 @@ completed: String(program.completed) === "true" || String(program.completed) ===
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      
+  <main className="flex-1">
+
       <div className="container mx-auto max-w-screen-lg px-4 pt-24 pb-10">
         <h2 className="text-3xl font-bold mb-6">My {activeTab === "events" ? " Joined Events" : " Enrolled Programs"}</h2>
 
@@ -88,13 +93,13 @@ completed: String(program.completed) === "true" || String(program.completed) ===
 
 
 
-              <Card key={item.id}  className=" disabled bg-secondary/40 border-white/10 overflow-hidden relative">
-               
-                 {item.completed && (
-    <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
-      Completed
-    </div>
-  )}
+              <Card key={item.id} className=" disabled bg-secondary/40 border-white/10 overflow-hidden relative">
+
+                {item.completed && (
+                  <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
+                    Completed
+                  </div>
+                )}
 
                 {item.imageUrl && (
                   <img
@@ -125,6 +130,7 @@ completed: String(program.completed) === "true" || String(program.completed) ===
           </div>
         )}
       </div>
+      </main>
       <Footer />
     </div>
   );
