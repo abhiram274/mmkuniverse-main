@@ -4,6 +4,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Label } from "@radix-ui/react-label";
+
  // Replace with your QR image
 
 const JoinEventPaymentForm = () => {
@@ -66,36 +70,109 @@ const JoinEventPaymentForm = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Server error");
+      toast.error("Duplicate entry");
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white shadow-md p-6 rounded-lg mt-10">
-      <h1 className="text-xl font-bold mb-4">Join Event Payment Form</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
+      <Navbar />
 
-      <div className="space-y-4">
-        <Input disabled value={formData.userId} name="userId" />
-        <Input disabled value={formData.name} name="name" />
-        <Input disabled value={formData.email} name="email" />
-        <Input disabled value={formData.eventId} name="eventId" />
-        <Input disabled value={formData.eventName} name="eventName" />
+      <div className="flex justify-center items-center min-h-[calc(100vh-80px)] px-4">
+        <div className="w-full max-w-md bg-[#1b1b2f] rounded-2xl p-8 shadow-2xl border border-white/10">
+          <h1 className="text-3xl font-bold text-center mb-6 text-white">
+            Join Event Payment
+          </h1>
 
-        <div className="text-center">
-          <img src="QR-AbhiramKosuru.jpg" alt="QR Code" className="w-40 h-40 mx-auto" />
+       <div className="space-y-4">
+            <div>
+              <Label htmlFor="userId" className="text-white">User ID</Label>
+              <Input
+                id="userId"
+                disabled
+                value={formData.userId}
+                name="userId"
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="name" className="text-white">Name</Label>
+              <Input
+                id="name"
+                disabled
+                value={formData.name}
+                name="name"
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email" className="text-white">Email</Label>
+              <Input
+                id="email"
+                disabled
+                value={formData.email}
+                name="email"
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="eventId" className="text-white">Event ID</Label>
+              <Input
+                id="eventId"
+                disabled
+                value={formData.eventId}
+                name="eventId"
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="eventName" className="text-white">Event Name</Label>
+              <Input
+                id="eventName"
+                disabled
+                value={formData.eventName}
+                name="eventName"
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
+              />
+            </div>
+
+            <div className="text-center mt-4">
+              <img
+                src="/src/pages/QR-AbhiramKosuru.jpg"
+                alt="QR Code"
+                className="w-60 h-60 mx-auto rounded-lg border border-white/20 shadow-lg"
+              />
+              <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
+            </div>
+
+            <div>
+              <Label htmlFor="transactionId" className="text-white">Transaction ID</Label>
+              <Input
+                id="transactionId"
+                placeholder="Enter Transaction ID"
+                name="transactionId"
+                value={formData.transactionId}
+                onChange={handleChange}
+                className="bg-[#2e2e48] text-white placeholder-white border border-white/30 focus:ring-2 focus:ring-mmk-purple"
+              />
+            </div>
+            <Button
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r   hover:opacity-90 text-white font-semibold py-2 rounded-lg
+             w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6"
+            >
+              Submit Payment Request
+            </Button>
+          </div>
         </div>
-
-        <Input
-          placeholder="Enter Transaction ID"
-          name="transactionId"
-          value={formData.transactionId}
-          onChange={handleChange}
-        />
-
-        <Button className="w-full bg-green-600 text-white" onClick={handleSubmit}>
-          Submit Payment Request
-        </Button>
       </div>
+      <br />
+ {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
+      <Footer />
     </div>
   );
 };
