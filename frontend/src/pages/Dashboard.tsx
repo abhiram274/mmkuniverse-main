@@ -88,6 +88,9 @@ const Dashboard = () => {
       setActiveMenuItem("manage_payment_events");
     }
     
+     else if (path === "/manage_payment_programs") {
+      setActiveMenuItem("manage_payment_programs");
+    }
     
     
     
@@ -245,6 +248,12 @@ const Dashboard = () => {
                 <Link to="/manage_programs">
                   <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
                     Manage Programs
+                  </button>
+                </Link>
+
+                    <Link to="/manage_payment_programs">
+                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
+                    Manage User Payments
                   </button>
                 </Link>
               </div>

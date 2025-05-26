@@ -90,6 +90,37 @@ await db.query(`
 });
 
 
+// In routes/events.js or a new route file
+router.get("/check-attendance", async (req, res) => {
+  const { userId, eventId } = req.query;
+
+  if (!userId || !eventId) {
+    return res.status(400).json({ error: "Missing userId or programId" });
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM program_attendees WHERE user_id = ? AND program_id = ?",
+      [userId, eventId]
+    );
+
+    if (rows.length > 0) {
+      res.json({ alreadyJoined: true });
+    } else {
+      res.json({ alreadyJoined: false });
+    }
+  } catch (err) {
+    console.error("Error checking attendance:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
+
+
+
 
 // PUT - Update a program
 router.put("/:id", upload.single("image"), async (req, res) => {
@@ -150,6 +181,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
+
+
+
 // DELETE - Delete a program
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
@@ -165,39 +199,6 @@ router.delete("/:id", async (req, res) => {
 
 
 
-// POST - Enroll a user in a program
-router.post("/:id/enroll", async (req, res) => {
-  const { id: program_id } = req.params;
-  const { user_id } = req.body;
-
-  if (!user_id) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
-
-  try {
-    // Check if the user is already enrolled in this program
-    const [existingEnrollment] = await db.query(
-      "SELECT * FROM enrollments WHERE user_id = ? AND program_id = ?",
-      [user_id, program_id]
-    );
-
-    if (existingEnrollment.length > 0) {
-      // User already enrolled
-      return res.status(409).json({ error: "User already enrolled in this program" });
-    }
-
-    // Insert new enrollment record
-    await db.query(
-      "INSERT INTO enrollments (user_id, program_id) VALUES (?, ?)",
-      [user_id, program_id]
-    );
-
-    res.status(201).json({ message: "User enrolled successfully" });
-  } catch (err) {
-    console.error("Error enrolling user:", err);
-    res.status(500).json({ error: "Failed to enroll user" });
-  }
-});
 
 
 
@@ -211,14 +212,14 @@ router.get("/", async (req, res) => {
     // Fetch all programs
     const [programs] = await db.query("SELECT * FROM programs");
 
-    // If userId passed, fetch all enrollments of this user
+    // If userId passed, fetch all program_attendees of this user
     let enrolledProgramIds = [];
     if (userId) {
-      const [enrollments] = await db.query(
-        "SELECT program_id FROM enrollments WHERE user_id = ?",
+      const [program_attendees] = await db.query(
+        "SELECT program_id FROM program_attendees WHERE user_id = ?",
         [userId]
       );
-      enrolledProgramIds = enrollments.map(e => e.program_id);
+      enrolledProgramIds = program_attendees.map(e => e.program_id);
     }
 
     // Attach isEnrolled flag and adjust image URL
@@ -239,6 +240,9 @@ router.get("/", async (req, res) => {
 });
 
 
+
+
+
 // Get all programs enrolled by a user
 router.get('/user-programs/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -247,7 +251,7 @@ router.get('/user-programs/:userId', async (req, res) => {
     const [events] = await db.query(`
       SELECT p.* 
       FROM programs p
-      JOIN enrollments e ON e.program_id = p.id
+      JOIN program_attendees e ON e.program_id = p.id
       WHERE e.user_id = ?
     `, [userId]);
 
@@ -257,6 +261,9 @@ router.get('/user-programs/:userId', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user events." });
   }
 });
+
+
+
 
 //Mark Program as completed
 router.put("/:id/complete", async (req, res) => {

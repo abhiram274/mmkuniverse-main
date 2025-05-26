@@ -34,10 +34,10 @@ const upload = multer({
 // verify-payment
 router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, res) => {
   const { userId, transactionId } = req.body;
-  const eventId = req.params.id;
+  const programId = req.params.id;
    const paymentImage = req.file;
 
-  if (!userId || !transactionId || !eventId || !paymentImage) {
+  if (!userId || !transactionId || !programId || !paymentImage) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
@@ -49,8 +49,8 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
   try {
     // Check if this user has already requested
     const [existingRequest] = await db.query(
-      "SELECT * FROM event_payment_requests WHERE user_id = ? AND event_id = ?",
-      [userId, eventId]
+      "SELECT * FROM program_payment_requests WHERE user_id = ? AND program_id = ?",
+      [userId, programId]
     );
 
     if (existingRequest.length > 0) {
@@ -59,8 +59,8 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
 
     // Insert into payment request table
     await db.query(
-      "INSERT INTO event_payment_requests (user_id, event_id, transaction_id, payment_image_path,status) VALUES (?, ?, ?, ?,'pending')",
-      [userId, eventId, transactionId, paymentImage.filename]
+      "INSERT INTO program_payment_requests (user_id, program_id, transaction_id, payment_image_path,status) VALUES (?, ?, ?, ?,'pending')",
+      [userId, programId, transactionId, paymentImage.filename]
     );
 
     res.status(200).json({ message: "Request submitted. Awaiting admin approval." });
@@ -74,52 +74,52 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
 
 //admin-approval
 router.post("/:id/accept-payment", async (req, res) => {
-  const eventId = req.params.id;
+  const programId = req.params.id;
   const { userId } = req.body;
 
-  if (!userId || !eventId) {
-    return res.status(400).json({ error: "Missing user or event ID" });
+  if (!userId || !programId) {
+    return res.status(400).json({ error: "Missing user or Program ID" });
   }
 
   try {
     // Get payment request
     const [[request]] = await db.query(
-      "SELECT * FROM event_payment_requests WHERE user_id = ? AND event_id = ? AND status = 'pending'",
-      [userId, eventId]
+      "SELECT * FROM program_payment_requests WHERE user_id = ? AND program_id = ? AND status = 'pending'",
+      [userId, programId]
     );
 
     if (!request) {
       return res.status(404).json({ error: "No pending request found" });
     }
 
-    // Add user to event
+    // Add user to program
     await db.query(
-      "INSERT INTO event_attendees (user_id, event_id, transaction_id) VALUES (?, ?, ?)",
-      [userId, eventId, request.transaction_id]
+      "INSERT INTO program_attendees (user_id, program_id, transaction_id) VALUES (?, ?, ?)",
+      [userId, programId, request.transaction_id]
     );
 
     // Update attendees count
     await db.query(
-      `UPDATE events SET attendees = (
-        SELECT COUNT(*) FROM event_attendees WHERE event_id = ?
+      `UPDATE programs SET attendees = (
+        SELECT COUNT(*) FROM program_attendees WHERE program_id = ?
       ) WHERE id = ?`,
-      [eventId, eventId]
+      [programId, programId]
     );
 
     // Update payment request status
     await db.query(
-      "UPDATE event_payment_requests SET status = 'approved' WHERE user_id = ? AND event_id = ?",
-      [userId, eventId]
+      "UPDATE program_payment_requests SET status = 'approved' WHERE user_id = ? AND program_id = ?",
+      [userId, programId]
     );
 
     // Send confirmation email
     const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [userId]);
-    const [[event]] = await db.query("SELECT title FROM events WHERE id = ?", [eventId]);
-    if (user && event) {
-      await sendConfirmationEmail(user.email, event.title);
+    const [[program]] = await db.query("SELECT title FROM programs WHERE id = ?", [programId]);
+    if (user && program) {
+      await sendConfirmationEmail(user.email, program.title);
     }
 
-    res.json({ message: "Payment approved and user added to event" });
+    res.json({ message: "Payment approved and user added to program" });
   } catch (err) {
     console.error("Admin accept error:", err);
     res.status(500).json({ error: "Server error" });
@@ -127,7 +127,7 @@ router.post("/:id/accept-payment", async (req, res) => {
 });
 
 
-async function sendConfirmationEmail(toEmail, eventTitle) {
+async function sendConfirmationEmail(toEmail, paymentTitle) {
   let transporter = nodemailer.createTransport({
     service: "gmail", // Use Gmail service
     auth: {
@@ -139,15 +139,11 @@ async function sendConfirmationEmail(toEmail, eventTitle) {
   await transporter.sendMail({
     from: '"MMK Universe Team" <heckerbeluga197@gmail.com>',
     to: toEmail,
-    subject: `Registration confirmed for ${eventTitle}`,
-    text: `Hello! Your registration for the event "${eventTitle}" is confirmed. Thank you!`,
+    subject: `Registration confirmed for ${paymentTitle}`,
+    text: `Hello! Your registration for the program "${paymentTitle}" is confirmed. Thank you!`,
   });
 }
 
-
-  //  SELECT p.*, e.title AS event_title 
-  //   FROM event_payment_requests p
-  //   JOIN events e ON p.event_id = e.id
 
 
 // Get pending payment requests
@@ -156,18 +152,18 @@ router.get("/payment-requests", async (req, res) => {
   const [rows] = await db.query(`
  
 SELECT 
-        epr.id,
-        epr.user_id,
-        epr.event_id,
-        epr.transaction_id,
-        epr.status,
-        epr.payment_image_path,
-        ev.title AS event_title
-      FROM event_payment_requests epr
-      JOIN events ev ON epr.event_id = ev.id
+        ppr.id,
+        ppr.user_id,
+        ppr.program_id,
+        ppr.transaction_id,
+        ppr.status,
+        ppr.payment_image_path,
+        pg.title AS program_title
+      FROM program_payment_requests ppr
+      JOIN programs pg ON ppr.program_id = pg.id
 
-    WHERE epr.status = 'pending'
-    ORDER BY epr.created_at DESC
+    WHERE ppr.status = 'pending'
+    ORDER BY ppr.created_at DESC
   `);
   res.json(rows);
   }
@@ -187,49 +183,49 @@ SELECT
 router.post("/payment-requests/:id/approve", async (req, res) => {
   const { id } = req.params;
   try {
-    const [[request]] = await db.query("SELECT * FROM event_payment_requests WHERE id = ?", [id]);
+    const [[request]] = await db.query("SELECT * FROM program_payment_requests WHERE id = ?", [id]);
     if (!request) return res.status(404).json({ error: "Request not found" });
 
 
 
 
 
-    const { user_id, event_id, transaction_id, payment_image_path  } = request;
+    const { user_id, program_id, transaction_id, payment_image_path  } = request;
 
     // Prevent duplicates
-    const [existing] = await db.query("SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?", [user_id, event_id]);
-    if (existing.length > 0) return res.status(400).json({ error: "User already joined" });
+    const [existing] = await db.query("SELECT * FROM program_attendees WHERE user_id = ? AND program_id = ?", [user_id, program_id]);
+    if (existing.length > 0) return res.status(400).json({ error: "User already enrolled" });
 
 
 
 
     // Approve
     await db.query(`
-      INSERT INTO event_attendees (user_id, event_id, transaction_id)
+      INSERT INTO program_attendees (user_id, program_id, transaction_id)
       VALUES (?, ?, ?)
-    `, [user_id, event_id, transaction_id]);
+    `, [user_id, program_id, transaction_id]);
 
 
 
     await db.query(`
-      UPDATE events SET attendees = (
-        SELECT COUNT(*) FROM event_attendees WHERE event_id = ?
+      UPDATE programs SET attendees = (
+        SELECT COUNT(*) FROM program_attendees WHERE program_id = ?
       ) WHERE id = ?
-    `, [event_id, event_id]);
+    `, [program_id, program_id]);
 
     //update attendees count
-    await db.query("UPDATE event_payment_requests SET status = 'approved' WHERE id = ?", [id]);
+    await db.query("UPDATE program_payment_requests SET status = 'approved' WHERE id = ?", [id]);
 
 
    // Send confirmation email
     const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [
       user_id,
     ]);
-    const [[event]] = await db.query("SELECT title FROM events WHERE id = ?", [
-      event_id,
+    const [[program]] = await db.query("SELECT title FROM programs WHERE id = ?", [
+      program_id,
     ]);
-    if (user && event) {
-      await sendConfirmationEmail(user.email, event.title);
+    if (user && program) {
+      await sendConfirmationEmail(user.email, program.title);
     }
 
     // Delete uploaded image
@@ -245,7 +241,7 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
 
 
 
-    res.json({ message: "Payment approved and user added to event" });
+    res.json({ message: "Payment approved and user added to Program" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
@@ -258,11 +254,11 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
 router.post("/payment-requests/:id/reject", async (req, res) => {
   const { id } = req.params;
   try {
-    const [[request]] = await db.query("SELECT * FROM event_payment_requests WHERE id = ?", [id]);
+    const [[request]] = await db.query("SELECT * FROM program_payment_requests WHERE id = ?", [id]);
     if (!request) return res.status(404).json({ error: "Request not found" });
 
 
-    await db.query("UPDATE event_payment_requests SET status = 'rejected' WHERE id = ?", [id]);
+    await db.query("UPDATE program_payment_requests SET status = 'rejected' WHERE id = ?", [id]);
 
     // Delete image
     if (request.payment_image_path) {
@@ -289,43 +285,3 @@ module.exports = router;
 
 
 
-// // Join an event
-// router.post("/:id/join-event", async (req, res) => {
-//   const { id: eventId } = req.params;
-//   const { userId } = req.body;
-
-//   if (!userId) {
-//     return res.status(400).json({ error: "User ID is required" });
-//   }
-
-//   try {
-//     // Check if already joined
-//     const [existing] = await db.query(
-//       'SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?',
-//       [userId, eventId]
-//     );
-
-//     if (existing.length > 0) {
-//       return res.status(400).json({ error: "User already joined the event" });
-//     }
-
-//     // Insert into event_attendees
-//     await db.query(
-//       `INSERT INTO event_attendees (user_id, event_id) VALUES (?, ?)`,
-//       [userId, eventId]
-//     );
-
-//     // Update attendees count
-//     await db.query(
-//       `UPDATE events SET attendees = (
-//         SELECT COUNT(*) FROM event_attendees WHERE event_id = ?
-//       ) WHERE id = ?`,
-//       [eventId, eventId]
-//     );
-
-//     res.json({ message: "User joined the event" });
-//   } catch (err) {
-//     console.error("Error in POST /events/:id/join-event", err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });

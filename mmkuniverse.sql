@@ -58,7 +58,7 @@ CREATE TABLE `enrollments` (
   KEY `program_id` (`program_id`),
   CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`program_id`) REFERENCES `programs` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,7 +67,6 @@ CREATE TABLE `enrollments` (
 
 LOCK TABLES `enrollments` WRITE;
 /*!40000 ALTER TABLE `enrollments` DISABLE KEYS */;
-INSERT INTO `enrollments` VALUES (1,1,7,'2025-05-21 15:30:26'),(2,3,7,'2025-05-22 05:04:13');
 /*!40000 ALTER TABLE `enrollments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -80,15 +79,17 @@ DROP TABLE IF EXISTS `event_attendees`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_attendees` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `user_id` varchar(250) NOT NULL,
   `event_id` int NOT NULL,
   `joined_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `transaction_id` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_user_event` (`user_id`,`event_id`),
+  UNIQUE KEY `transaction_id` (`transaction_id`),
   KEY `event_id` (`event_id`),
-  CONSTRAINT `event_attendees_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `event_attendees_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `event_attendees_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,8 +98,40 @@ CREATE TABLE `event_attendees` (
 
 LOCK TABLES `event_attendees` WRITE;
 /*!40000 ALTER TABLE `event_attendees` DISABLE KEYS */;
-INSERT INTO `event_attendees` VALUES (7,1,1,'2025-05-22 05:11:24'),(8,1,2,'2025-05-22 06:02:35'),(10,1,4,'2025-05-22 09:29:00');
+INSERT INTO `event_attendees` VALUES (1,'MMK_U_1',1,'2025-05-24 09:34:24','123456789120'),(2,'MMK_U_1',2,'2025-05-25 06:57:54','123456789122'),(3,'MMK_U_1',3,'2025-05-25 11:27:25','513350823178');
 /*!40000 ALTER TABLE `event_attendees` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `event_payment_requests`
+--
+
+DROP TABLE IF EXISTS `event_payment_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `event_payment_requests` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(255) NOT NULL,
+  `event_id` int NOT NULL,
+  `transaction_id` varchar(20) NOT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `requested_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `transaction_id` (`transaction_id`),
+  KEY `idx_user_event` (`user_id`,`event_id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `event_payment_requests`
+--
+
+LOCK TABLES `event_payment_requests` WRITE;
+/*!40000 ALTER TABLE `event_payment_requests` DISABLE KEYS */;
+INSERT INTO `event_payment_requests` VALUES (1,'MMK_U_1',1,'123456789120','approved','2025-05-24 09:34:14','2025-05-24 09:34:14'),(5,'MMK_U_1',2,'123456789122','approved','2025-05-25 06:57:43','2025-05-25 06:57:43'),(6,'MMK_U_1',3,'513350823178','approved','2025-05-25 11:27:04','2025-05-25 11:27:04');
+/*!40000 ALTER TABLE `event_payment_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -121,7 +154,7 @@ CREATE TABLE `events` (
   `image` varchar(255) DEFAULT NULL,
   `completed` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -130,7 +163,7 @@ CREATE TABLE `events` (
 
 LOCK TABLES `events` WRITE;
 /*!40000 ALTER TABLE `events` DISABLE KEYS */;
-INSERT INTO `events` VALUES (1,'CYBER SECURITY','cyber security hackathon','2026-03-31','23:03:00','anits','abhi',1,'Hackathon','1747890467929-760416309.png',1),(2,'Hello world','why not 175','2026-03-03','10:00:00','bp','pb',1,'Other','1747893708237-157175838.png',1),(4,'Competition','abcd','2025-05-30','10:00:00','anits','abhi',1,'Competition','1747898435714-371428707.png',0);
+INSERT INTO `events` VALUES (1,'ABCD','','2025-03-22','00:00:00','','',1,'',NULL,0),(2,'hello','hii','2025-03-31','00:00:00','','',1,'',NULL,0),(3,'erpka','','2026-03-02','00:00:00','','',1,'',NULL,0);
 /*!40000 ALTER TABLE `events` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -155,7 +188,7 @@ CREATE TABLE `programs` (
   `image` varchar(255) DEFAULT NULL,
   `completed` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -164,7 +197,6 @@ CREATE TABLE `programs` (
 
 LOCK TABLES `programs` WRITE;
 /*!40000 ALTER TABLE `programs` DISABLE KEYS */;
-INSERT INTO `programs` VALUES (7,'Businees','asbc','22',0,0,0,'4  days','2026-03-23','Business','1747841407112-459458046.png',1);
 /*!40000 ALTER TABLE `programs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,7 +247,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,7 +256,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'MMK_U_1','Kosuru Abhiram','abhiramkosuru111@gmail.com','$2b$10$tuzSCkUUKOg1ugEcJBHl8uoNQoGwh3EW1hiH3amd2F0NiPplAN1pW','2025-05-18 06:49:33',NULL),(2,'MMK_U_2','abhi274','abhi@gmail.com','$2b$10$UiiSgXiiZm3lRyfaKMS7.OwL4b9BOvI3tSijUWSbdad9pQQtMlXA6','2025-05-18 06:50:53',NULL),(3,'MMK_U_3','meghamma','meghanaa@gmail.com','$2b$10$uVgchfKDX/piiMqo3nZJK..USITS4rxzbl0TVBohyeyEBrIeI4sQ6','2025-05-18 14:41:31',NULL),(4,'MMK_U_4','Prabhas','prabhas@gmail.com','$2b$10$5tO735gyi63OLqJOW3RzUeh/6/08n/NuM37k5.di3QNZg52IclKGS','2025-05-18 14:45:00',NULL),(5,'MMK_U_5','mark','mark@gmail.com','$2b$10$H0Pur87lUqm26bn5kM8RXeRB.B0kzHGcfUP6tlAxsCZHFipWpYVLa','2025-05-18 14:50:41',NULL),(6,'MMK_U_6','abhiram2222','abhiram274@gmail.com','$2b$10$dAvaGMXjapTMKKqsNDd9nef3sHIiqRWFwVpRdnqUGP55pd8oeJ/Ga','2025-05-21 13:53:14',NULL),(7,'MMK_U_7','Satyadatta','satyadattak2005@gmail.com','$2b$10$ftzQNEXeiVDLg6Ou09nXE.0rgyRDefhnvyz61NYsEQ3f0wQ8HPe4C','2025-05-22 11:28:56','7386133139'),(8,'MMK_U_8','Satyadatta','satyadattak2006@gmail.com','$2b$10$O6TtOE35miDPHTvbiXSIk.T1qvR8HTERFUwciCmbEzQAY7o2x9VCa','2025-05-22 11:29:48','7386133139'),(9,'MMK_U_9','Meghana','meghanalokanadham2005@gmail.com','$2b$10$JYEEJ.QlZeSX4ZDNjMLIsumbiwENMfipCfUrzpZLghNzghYL0E07C','2025-05-22 12:18:31','7386133139');
+INSERT INTO `users` VALUES (1,'MMK_U_1','Kosuru Abhiram','abhiramkosuru967@gmail.com','$2b$10$rzZSD1Yg9niUvLGzBWo/l./8WOtvJPs2p/CHyglytoGYb32k/1eXK','2025-05-24 06:18:49','+917386133139');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -237,4 +269,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-22 18:00:13
+-- Dump completed on 2025-05-25 17:04:42

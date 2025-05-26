@@ -30,6 +30,8 @@ import JoinEventPaymentForm from "./pages/JoinEventPaymentForm";
 
 import ProtectedRoute from "./components/ProtectedRoute"; // Make sure path is correct
 import UserProtectedRoute from "./components/UserProtectedRoute"; // 👈 Add this import
+import JoinProgramPaymentForm from "./pages/JoinProgramPaymentForm";
+import ManageProgramPayments from "./pages/admin/manage-program-payments";
 
 
 const queryClient = new QueryClient();
@@ -45,12 +47,12 @@ const App = () => (
 
 
 
-      {/* User protected routes */}
-      <Route path="/home" element={
-        <UserProtectedRoute>
-          <Home />
-        </UserProtectedRoute>
-      } />
+          {/* User protected routes */}
+          <Route path="/home" element={
+            <UserProtectedRoute>
+              <Home />
+            </UserProtectedRoute>
+          } />
 
 
 
@@ -62,83 +64,100 @@ const App = () => (
 
           <Route path="/signup" element={<Signup />} />
 
-  {/* Admin protected routes */}
-  <Route path="/dashboard" element={
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
-  } />
+          {/* Admin protected routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
 
 
- <Route path="/programs" element={
-    <UserProtectedRoute>
-      <Programs />
-    </UserProtectedRoute>
-  } />
-  <Route path="/freelance" element={
-    <UserProtectedRoute>
-      <FreelanceGigsHub />
-    </UserProtectedRoute>
-  } />
-  <Route path="/events" element={
-    <UserProtectedRoute>
-      <Events />
-    </UserProtectedRoute>
-  } />
-  <Route path="/community" element={
-    <UserProtectedRoute>
-      <Community />
-    </UserProtectedRoute>
-  } />
-  <Route path="/my_profile" element={
-    <UserProtectedRoute>
-      <MyProfile />
-    </UserProtectedRoute>
-  } />
+          <Route path="/programs" element={
+            <UserProtectedRoute>
+              <Programs />
+            </UserProtectedRoute>
+          } />
+          <Route path="/freelance" element={
+            <UserProtectedRoute>
+              <FreelanceGigsHub />
+            </UserProtectedRoute>
+          } />
+          <Route path="/events" element={
+            <UserProtectedRoute>
+              <Events />
+            </UserProtectedRoute>
+          } />
+          <Route path="/community" element={
+            <UserProtectedRoute>
+              <Community />
+            </UserProtectedRoute>
+          } />
+          <Route path="/my_profile" element={
+            <UserProtectedRoute>
+              <MyProfile />
+            </UserProtectedRoute>
+          } />
 
-         
+
           <Route path="/forum" element={<ForumBlogs />} />
-      
+
 
 
 
           <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFound />} />
 
-      
-
-<Route path="/admin_events" element={
-    <ProtectedRoute>
-      <AdminEvents />
-    </ProtectedRoute>
-  } />
-  <Route path="/manage_events" element={
-    <ProtectedRoute>
-      <ManageEvents />
-    </ProtectedRoute>
-  } />
-  <Route path="/admin_programs" element={
-    <ProtectedRoute>
-      <AdminPrograms />
-    </ProtectedRoute>
-  } />
-  <Route path="/manage_programs" element={
-    <ProtectedRoute>
-      <ManagePrograms />
-    </ProtectedRoute>
-  } />
 
 
+          <Route path="/admin_events" element={
+            <ProtectedRoute>
+              <AdminEvents />
+            </ProtectedRoute>
+          } />
+          <Route path="/manage_events" element={
+            <ProtectedRoute>
+              <ManageEvents />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin_programs" element={
+            <ProtectedRoute>
+              <AdminPrograms />
+            </ProtectedRoute>
+          } />
+          <Route path="/manage_programs" element={
+            <ProtectedRoute>
+              <ManagePrograms />
+            </ProtectedRoute>
+          } />
 
 
 
 
-          <Route path="/payments/:id/verify" element={<VerifyPage />} />
-          
-          <Route path="/manage_payment_events" element={<ManageEventPayments />} />
+
+
+          {/* <Route path="/payments/:id/verify" element={<VerifyPage />} /> */}
+
+          <Route path="/manage_payment_events" element={
+            <ProtectedRoute>
+              <ManageEventPayments />
+            </ProtectedRoute>
+
+          } />
 
 
           <Route path="/join-event-payment" element={<JoinEventPaymentForm />} />
+
+                    <Route path="/join-program-payment" element={<JoinProgramPaymentForm />} />
+
+ <Route path="/manage_payment_programs" element={
+            <ProtectedRoute>
+              <ManageProgramPayments />
+            </ProtectedRoute>
+
+          } />
+
+
+
 
         </Routes>
       </BrowserRouter>

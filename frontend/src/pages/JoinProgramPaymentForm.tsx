@@ -1,4 +1,4 @@
-// src/pages/JoinEventPaymentForm.tsx
+// src/pages/JoinProgramPaymentForm.tsx
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,15 +10,15 @@ import { Label } from "@radix-ui/react-label";
 
 // Replace with your QR image
 
-const JoinEventPaymentForm = () => {
+const JoinProgramPaymentForm = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     userId: "",
     name: "",
     email: "",
-    eventId: "",
-    eventName: "",
+    programId: "",
+    programName: "",
     transactionId: "",
   });
 
@@ -26,16 +26,16 @@ const JoinEventPaymentForm = () => {
     const storedUserId = localStorage.getItem("MMK_U_user_id") || "";
     const storedName = localStorage.getItem("MMK_U_name") || "";
     const storedEmail = localStorage.getItem("MMK_U_email") || "";
-    const storedEventId = localStorage.getItem("MMK_E_event_id") || "";
-    const storedEventName = localStorage.getItem("MMK_E_event_name") || "";
+    const storedProgramtId = localStorage.getItem("MMK_P_program_id") || "";
+    const storedProgramName = localStorage.getItem("MMK_P_program_name") || "";
 
     setFormData((prev) => ({
       ...prev,
       userId: storedUserId,
       name: storedName,
       email: storedEmail,
-      eventId: storedEventId,
-      eventName: storedEventName,
+      programId: storedProgramtId,
+      programName: storedProgramName,
     }));
   }, []);
 
@@ -54,31 +54,24 @@ const JoinEventPaymentForm = () => {
       return;
     }
 
-      if (!paymentImage) {
-    toast.error("Please upload a payment screenshot.");
-    return;
-  }
-  
-  const submissionData = new FormData();
-  submissionData.append("userId", formData.userId);
-  submissionData.append("transactionId", formData.transactionId);
-  submissionData.append("paymentImage", paymentImage); // image file
+    if (!paymentImage) {
+      toast.error("Please upload a payment screenshot.");
+      return;
+    }
+
+    const submissionData = new FormData();
+    submissionData.append("userId", formData.userId);
+    submissionData.append("transactionId", formData.transactionId);
+    submissionData.append("paymentImage", paymentImage); // image file
 
 
 
 
     try {
-      const res = await fetch(`http://localhost:5000/payments/${formData.eventId}/verify-payment`, {
+      const res = await fetch(`http://localhost:5000/program-payments/${formData.programId}/verify-payment`, {
         method: "POST",
-        // headers: {
-        //   "Content-Type": "application/json",
-        // },
-        // body: JSON.stringify({
-        //   userId: formData.userId,
-        //   transactionId: formData.transactionId,
-        // }),
 
-              body: submissionData,
+        body: submissionData,
       });
 
       const data = await res.json();
@@ -97,19 +90,19 @@ const JoinEventPaymentForm = () => {
   const [paymentImage, setPaymentImage] = useState<File | null>(null);
 
 
-return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
       <Navbar />
 
       <div className="flex justify-center items-center min-h-[calc(100vh-80px)] px-4">
         <div className="w-full max-w-md bg-[#1b1b2f] rounded-2xl p-8 shadow-2xl border border-white/10">
           <h1 className="text-3xl font-bold text-center mb-6 text-white">
-            Join Event Payment
+            Enroll Program Payment
           </h1>
 
           <div className="space-y-4">
             <div>
-              <Label   htmlFor="userId" className="text-white">User ID</Label>
+              <Label htmlFor="userId" className="text-white">User ID</Label>
               <Input
                 id="userId"
                 disabled
@@ -142,23 +135,23 @@ return (
             </div>
 
             <div>
-              <Label htmlFor="eventId" className="text-white">Event ID</Label>
+              <Label htmlFor="programId" className="text-white">Program ID</Label>
               <Input
-                id="eventId"
+                id="programId"
                 disabled
-                value={formData.eventId}
-                name="eventId"
+                value={formData.programId}
+                name="programId"
                 className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
               />
             </div>
 
             <div>
-              <Label htmlFor="eventName" className="text-white">Event Name</Label>
+              <Label htmlFor="programName" className="text-white">Program Name</Label>
               <Input
-                id="eventName"
+                id="programName"
                 disabled
-                value={formData.eventName}
-                name="eventName"
+                value={formData.programName}
+                name="programName"
                 className="bg-[#2e2e48] text-white placeholder-white border border-white/20"
               />
             </div>
@@ -216,4 +209,4 @@ return (
   );
 };
 
-export default JoinEventPaymentForm;
+export default JoinProgramPaymentForm;

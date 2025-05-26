@@ -16,7 +16,7 @@ interface ProgramProps {
   date: string;
    category: string;
    isEnrolled?: boolean;
-     onEnroll?: (programId: number) => void; // 👈 added prop
+  onEnroll: (programId: number, programName: string) => void;
 
 }
 
@@ -87,7 +87,7 @@ const ProgramCard = ({
           <span className="text-lg font-bold">{isFree ? "Free" : price}</span>
          <Button
     className="bg-mmk-purple hover:bg-mmk-purple/90 text-white"
-    onClick={() => onEnroll(id)}
+    onClick={() => onEnroll (id, title)}
     disabled={isEnrolled}
   >
     {isEnrolled ? "Enrolled" : "Enroll Now"}

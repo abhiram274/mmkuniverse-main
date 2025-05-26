@@ -8,7 +8,7 @@ const authRoutes = require('./routes/auth');
 const eventsRouter = require("./routes/events");
 const programsRouter = require("./routes/programs");
 const paymentRouter = require("./routes/payments");
-
+const programPaymentRouter = require("./routes/program_payments");
 const app = express();
 
 app.use(express.json());
@@ -37,6 +37,8 @@ app.use('/events', eventsRouter);
 app.use('/programs',programsRouter);
 
 app.use('/payments',paymentRouter);
+
+app.use('/program-payments', programPaymentRouter);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)

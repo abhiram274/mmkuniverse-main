@@ -32,8 +32,10 @@ const Programs = () => {
     isCertified: false,
     isLive: false,
   });
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
 
   const [programsData, setProgramsData] = useState<Program[]>([]);
@@ -41,26 +43,26 @@ const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPrograms = async () => {
-         try {
-      const storedId = localStorage.getItem("MMK_U_user_id");
-      let userId: number | null = null;
-      if (storedId) {
-        userId = parseInt(storedId.replace("MMK_U_", ""), 10);
-        if (isNaN(userId)) userId = null;
-      }
+      try {
+        const storedId = localStorage.getItem("MMK_U_user_id");
+        let userId: number | null = null;
+        if (storedId) {
+          userId = parseInt(storedId.replace("MMK_U_", ""), 10);
+          if (isNaN(userId)) userId = null;
+        }
 
-      // Pass user_id as query param if available
-      const url = userId ? `http://localhost:5000/programs?user_id=${userId}` : "http://localhost:5000/programs";
-      const res = await axios.get(url);
+        // Pass user_id as query param if available
+        const url = userId ? `http://localhost:5000/programs?user_id=${userId}` : "http://localhost:5000/programs";
+        const res = await axios.get(url);
 
-  
+
         const data: Program[] = res.data.map((p: Program) => ({
           ...p,
           image: p.image || "",
           isFree: Boolean(p.isFree),
           isCertified: Boolean(p.isCertified),
           isLive: Boolean(p.isLive),
-             isEnrolled: Boolean(p.isEnrolled), 
+          isEnrolled: Boolean(p.isEnrolled),
         }));
 
         setProgramsData(data);
@@ -74,7 +76,7 @@ const navigate = useNavigate();
 
     fetchPrograms();
   }, []);
-  
+
 
   const handleFilterChange = (filter: keyof typeof filters) => {
     setFilters(prev => ({
@@ -100,51 +102,59 @@ const navigate = useNavigate();
 
 
 
-const handleEnroll = async (programId: number) => {
-  const storedId = localStorage.getItem("MMK_U_user_id");
-  console.log("Stored ID:", storedId);
+  const handleEnroll = async (programId: number, programName: string) => {
+    const storedId = localStorage.getItem("MMK_U_user_id");
+    const storedUserName = localStorage.getItem("MMK_U_name");
+    const storedUserEmail = localStorage.getItem("MMK_U_email");
 
-  if (!storedId) {
-    toast.error("Please log in to enroll.");
-    return;
-  }
 
-  const userId = parseInt(storedId.replace("MMK_U_", ""), 10); // ✅ Convert to number
+    console.log(storedUserName)
+    console.log(storedUserEmail);
+    if (!storedId || !storedUserName || !storedUserEmail) {
+      toast.error("Please log in to join.");
+      return;
+    }
 
-  if (isNaN(userId)) {
-    toast.error("Invalid user ID.");
-    return;
-  }
 
-  try {
-    const res = await fetch(`http://localhost:5000/programs/${programId}/enroll`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ user_id: userId }) // send numeric ID
-    });
+    // const userId = parseInt(storedId.replace("MMK_U_", ""), 10); // ✅ Convert to number
 
-    if (res.ok) {
-      toast.success("Enrolled successfully!");
-     // navigate('/my_profile');
-      setProgramsData(prev =>
-          prev.map(p =>
-            p.id === programId ? { ...p, isEnrolled: true } : p
-          )
-        );
+    const userId = storedId; // keep as string "MMK_U_1234"
+    const userName = storedUserName;
+    const userEmail = storedUserEmail;
 
-       } 
-       
-       else {
-        const errorData = await res.json();
+    if (!(userId)) {
+      toast.error("Invalid user ID.");
+      return;
+    }
 
-        if (errorData.message === "Enrollment already exists") {
-          toast.error("You are already enrolled in this program.");
-        } else {
-          toast.error("Enrollment failed.");
-        }
+    try {
+      const res = await fetch(`http://localhost:5000/programs/check-attendance?userId=${userId}&programId=${programId}`);
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      //   body: JSON.stringify({ user_id: userId }) // send numeric ID
+      // });
+
+      const data = await res.json();
+
+      if (data.alreadyJoined) {
+        toast.info("You have already joined this Program.");
+        return;
       }
+
+
+      const program = programsData.find((p) => p.id === programId);
+      if (program) {
+        setSelectedProgram(program);
+      }
+
+      localStorage.setItem("MMK_P_program_id", programId.toString());
+      localStorage.setItem("MMK_P_program_name", programName);
+      // navigate("/join-program-payment");
+      setTimeout(() => {
+        navigate("/join-program-payment");
+      }, 1500);
     } catch (err) {
       console.error("Enrollment error:", err);
       toast.error("Enrollment failed.");
@@ -172,7 +182,7 @@ const handleEnroll = async (programId: number) => {
       </section>
 
 
-      
+
 
       <section className="py-8 px-4">
         <div className="container mx-auto">
@@ -208,49 +218,54 @@ const handleEnroll = async (programId: number) => {
                 <Button
                   variant="outline"
                   className="border-white/10 text-gray-300 flex items-center gap-2 h-12"
-                  onClick={() => document.getElementById("filters")?.classList.toggle("hidden")}
+                  onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="h-4 w-4" />
                   Filters
                 </Button>
+
               </div>
             </div>
 
-            <div id="filters" className="hidden mt-4 pt-4 border-t border-white/10">
-              <div className="flex flex-wrap gap-4">
-                <Button
-                  variant={filters.isFree ? "default" : "outline"}
-                  className={filters.isFree ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
-                  onClick={() => handleFilterChange("isFree")}
-                >
-                  Free Courses
-                </Button>
 
-                <Button
-                  variant={filters.isCertified ? "default" : "outline"}
-                  className={filters.isCertified ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
-                  onClick={() => handleFilterChange("isCertified")}
-                >
-                  Certified
-                </Button>
+            {showFilters && (
+              <div id="filters" className=" mt-4 pt-4 border-t border-white/10">
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    variant={filters.isFree ? "default" : "outline"}
+                    className={filters.isFree ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
+                    onClick={() => handleFilterChange("isFree")}
+                  >
+                    Free Courses
+                  </Button>
 
-                <Button
-                  variant={filters.isLive ? "default" : "outline"}
-                  className={filters.isLive ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
-                  onClick={() => handleFilterChange("isLive")}
-                >
-                  Live Classes
-                </Button>
+                  <Button
+                    variant={filters.isCertified ? "default" : "outline"}
+                    className={filters.isCertified ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
+                    onClick={() => handleFilterChange("isCertified")}
+                  >
+                    Certified
+                  </Button>
+
+                  <Button
+                    variant={filters.isLive ? "default" : "outline"}
+                    className={filters.isLive ? "bg-mmk-purple text-white" : "border-white/10 text-gray-300"}
+                    onClick={() => handleFilterChange("isLive")}
+                  >
+                    Live Classes
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
 
-{/*Program Cards*/}
+      {/*Program Cards*/}
 
-      <section className="py-12 px-4 flex-grow">
+      {/* <section className="py-12 px-4 flex-grow"> */}
+      <section className="py-12 px-4 bg-mmk-dark/40">
         <div className="container mx-auto">
           {filteredPrograms.length > 0 ? (
             <>
@@ -263,13 +278,12 @@ const handleEnroll = async (programId: number) => {
                   <div key={program.id}>
                     <ProgramCard
                       {...program}
-                       onEnroll={handleEnroll}
+                      onEnroll={() => handleEnroll(program.id, program.title)}
                       isCertified={Boolean(program.isCertified)}
                       isFree={Boolean(program.isFree)}
                       isLive={Boolean(program.isLive)}
-                        isEnrolled={Boolean(program.isEnrolled)} 
+                      isEnrolled={Boolean(program.isEnrolled)}
                     />
-
                   </div>
                 ))}
               </div>
@@ -296,7 +310,6 @@ const handleEnroll = async (programId: number) => {
           )}
         </div>
       </section>
-
       <Footer />
     </div>
   );

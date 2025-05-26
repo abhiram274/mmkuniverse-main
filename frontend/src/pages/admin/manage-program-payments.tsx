@@ -8,21 +8,21 @@ import Dashboard from "../Dashboard";
 interface PaymentRequest {
   id: number;
   user_id: number;
-  event_id: number;
+  program_id: number;
   transaction_id: string;
   status: "pending" | "approved" | "rejected";
-  event_title: string;
+  program_title: string;
   payment_image_path: string;
 }
 
-const ManageEventPayments = () => {
+const ManageProgramPayments = () => {
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("http://localhost:5000/payments/payment-requests");
+      const res = await fetch("http://localhost:5000/program-payments/payment-requests");
       const data = await res.json();
       setRequests(data);
     } catch (err) {
@@ -37,7 +37,7 @@ const ManageEventPayments = () => {
 
   const handleAction = async (requestId: number, action: "approve" | "reject") => {
     try {
-      const res = await fetch(`http://localhost:5000/payments/payment-requests/${requestId}/${action}`, {
+      const res = await fetch(`http://localhost:5000/program-payments/payment-requests/${requestId}/${action}`, {
         method: "POST",
       });
 
@@ -62,15 +62,15 @@ const ManageEventPayments = () => {
       </div>
 
       <main className="flex-1 overflow-auto p-8 bg-gray-800 text-white">
-        <h1 className="text-2xl font-bold mb-6">Admin - Manage Event Payments</h1>
+        <h1 className="text-2xl font-bold mb-6">Admin - Manage Programa Payments</h1>
 
         <div className="overflow-auto border border-white/10 rounded">
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-700">
               <tr>
                 <th className="px-4 py-2">User ID</th>
-                <th className="px-4 py-2">Event</th>
-                <th className="px-4 py-2">Event ID</th>
+                <th className="px-4 py-2">Program</th>
+                <th className="px-4 py-2">Program ID</th>
                 <th className="px-4 py-2">Image</th>
 
                 <th className="px-4 py-2">Transaction ID</th>
@@ -82,8 +82,8 @@ const ManageEventPayments = () => {
               {requests.map((req) => (
                 <tr key={req.id} className="border-t border-white/10">
                   <td className="px-4 py-2">{req.user_id}</td>
-                  <td className="px-4 py-2">{req.event_title}</td>
-                  <td className="px-4 py-2">{req.event_id}</td>
+                  <td className="px-4 py-2">{req.program_title}</td>
+                  <td className="px-4 py-2">{req.program_id}</td>
                 
 
                   <td className="px-4 py-2">
@@ -159,4 +159,4 @@ const ManageEventPayments = () => {
   );
 };
 
-export default ManageEventPayments;
+export default ManageProgramPayments;
