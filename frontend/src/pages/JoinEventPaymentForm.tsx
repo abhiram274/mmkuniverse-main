@@ -8,7 +8,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Label } from "@radix-ui/react-label";
 
+<<<<<<< HEAD
 // Replace with your QR image
+=======
+ // Replace with your QR image
+>>>>>>> origin/main
 
 const JoinEventPaymentForm = () => {
   const navigate = useNavigate();
@@ -90,10 +94,11 @@ const JoinEventPaymentForm = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Server error");
+      toast.error("Duplicate entry");
     }
   };
 
+<<<<<<< HEAD
   const [paymentImage, setPaymentImage] = useState<File | null>(null);
 
 
@@ -110,6 +115,21 @@ return (
           <div className="space-y-4">
             <div>
               <Label   htmlFor="userId" className="text-white">User ID</Label>
+=======
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
+      <Navbar />
+
+      <div className="flex justify-center items-center min-h-[calc(100vh-80px)] px-4">
+        <div className="w-full max-w-md bg-[#1b1b2f] rounded-2xl p-8 shadow-2xl border border-white/10">
+          <h1 className="text-3xl font-bold text-center mb-6 text-white">
+            Join Event Payment
+          </h1>
+
+       <div className="space-y-4">
+            <div>
+              <Label htmlFor="userId" className="text-white">User ID</Label>
+>>>>>>> origin/main
               <Input
                 id="userId"
                 disabled
@@ -172,6 +192,7 @@ return (
               <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
             </div>
 
+<<<<<<< HEAD
 
 
             <div>
@@ -188,6 +209,8 @@ return (
 
 
 
+=======
+>>>>>>> origin/main
             <div>
               <Label htmlFor="transactionId" className="text-white">Transaction ID</Label>
               <Input
@@ -210,7 +233,11 @@ return (
         </div>
       </div>
       <br />
+<<<<<<< HEAD
       {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
+=======
+ {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
+>>>>>>> origin/main
       <Footer />
     </div>
   );
