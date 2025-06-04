@@ -44,7 +44,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 glass-card">
+        <div className="md:hidden absolute top-16 left-0 right-0 ">
           <div className="flex flex-col space-y-4 p-4">
             <Link to="/programs" className="text-gray-300 hover:text-white transition py-2">Programs</Link>
             <Link to="/events" className="text-gray-300 hover:text-white transition py-2">Events</Link>

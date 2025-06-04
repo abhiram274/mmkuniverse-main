@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { Calendar, Users, MapPin, Clock, Filter, Plus, Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Share2 } from "lucide-react";
 
 import {
   Card,
@@ -11,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -28,9 +29,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
-import { Footer } from "react-day-picker";
-
-// 👇 Define Event type
 
 type Event = {
   id: string;
@@ -41,33 +39,48 @@ type Event = {
   location: string;
   organizer: string;
   attendees: number;
+  attendance_limit: number;
   category?: string;
   imageUrl?: string;
   isEnrolled?: boolean;
+  start_date?: string;
+  end_date?: string;
+  price: string;
+  email: string;
 };
-
 
 const EVENT_CATEGORIES = ["Workshop", "Hackathon", "Webinar", "Competition", "Career Fair", "Conference", "Social", "Other"];
 
+// const formatDateToYMD = (date: Date): string => {
+//   return date.toISOString().split("T")[0];
+// };
 
 const formatDateToYMD = (date: Date): string => {
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 
-const Events = () => {
 
+const formatDateDisplay = (isoString) => {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+};
+
+const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isCreateEventDialogOpen, setIsCreateEventDialogOpen] = useState(false);
   const [isEventDetailsDialogOpen, setIsEventDetailsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -81,25 +94,17 @@ const Events = () => {
           if (isNaN(userId)) userId = null;
         }
 
-
-        // Pass user_id as query param if available
-        const url = userId ? `http://localhost:5000/events?user_id=${userId}` : "http://localhost:5000/events";
+        const url = userId ? `http://localhost:5000/events/non-complete?user_id=${userId}` : "http://localhost:5000/events/non-complete";
         const res = await axios.get(url);
-
-
-        // if (!res.ok) throw new Error("Failed to fetch events");
-
-
-        // const data = await res.json();
 
         const mappedEvents: Event[] = res.data.map((event) => ({
           ...event,
+          category: event.category || "Other",
           imageUrl: event.image ?? undefined,
           isEnrolled: Boolean(event.isEnrolled),
-
+          end_date: event.end_date ?? undefined,
+          start_date: event.start_date ?? undefined,
         }));
-
-
 
         setEvents(mappedEvents);
       } catch (error) {
@@ -114,13 +119,6 @@ const Events = () => {
     fetchEvents();
   }, []);
 
-
-
-
-
-  const navigate = useNavigate();
-
-
   useEffect(() => {
     let temp = [...events];
     if (searchQuery) {
@@ -134,108 +132,42 @@ const Events = () => {
     if (selectedCategory !== "All") {
       temp = temp.filter((e) => e.category === selectedCategory);
     }
+
+
+
+
     if (selectedDate) {
-      const formatted = formatDateToYMD(selectedDate);
-      temp = temp.filter((e) => e.date === formatted);
+      const selectedFormatted = formatDateToYMD(selectedDate); // "YYYY-MM-DD"
+
+      temp = temp.filter((e) => {
+        if (!e.date) return false;
+        // Create Date object from UTC string, then convert to LOCAL YMD
+        const localEventDate = formatDateToYMD(new Date(e.date)); // Uses local time
+        return localEventDate === selectedFormatted;
+      });
     }
+
+
+
     setFilteredEvents(temp);
   }, [events, searchQuery, selectedCategory, selectedDate]);
 
 
 
 
-
-
-
-
-
-
-  // //handle join
-  // const handleJoinEvent = async (eventId: string) => {
-
-  //   const storedId = localStorage.getItem("MMK_U_user_id");
-  //   const storedUserName = localStorage.getItem("MMK_U_user_name");
-  //   console.log("Stored ID:", storedId); // Debugging line
-
-  //  if (!storedId || !storedUserName) {
-  //   toast.error("Please log in to join.");
-  //   return;
-  // }
-
-  //   const userId = parseInt(storedId.replace("MMK_U_", ""), 10); // ✅ Convert to number
-  //   const userName = storedUserName;
-
-  //   if (isNaN(userId)) {
-  //     toast.error("Invalid user ID.");
-  //     return;
-  //   }
-
-
-  //   try {
-  //     // const userJson = localStorage.getItem("user");
-  //     // if (!userJson) {
-  //     //   alert("Please log in to join an event.");
-  //     //   return;
-  //     // }
-  //     // const user = JSON.parse(userJson);
-
-  //     const res = await fetch(`http://localhost:5000/events/${eventId}/join-event`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ userId: userId }),
-  //     });
-
-  //     if (res.ok) {
-  //       toast.success("Joined successfully!");
-  //       // navigate('/my_profile');
-
-  //       setEvents((prev) =>
-  //         prev.map((e) =>
-  //           e.id === eventId ? { ...e, attendees: e.attendees + 1, isEnrolled: true } : e
-  //         )
-  //       );
-  //     }
-
-
-  //     else {
-  //       const errorData = await res.json();
-
-  //       if (errorData.message === "User already joined the event") {
-  //         toast.error("You are already joined in this program.");
-  //       } else {
-  //         toast.error("Joining  failed.");
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error("Joining in an event error:", err);
-  //     toast.error("Joining failed.");
-  //   }
-
-
-  // };
-
-
-  //handle join event
-
-  const handleJoinEvent = async (eventId: string, eventName: string,) => {
+  const handleJoinEvent = async (eventId: string, eventName: string) => {
     const storedId = localStorage.getItem("MMK_U_user_id");
     const storedUserName = localStorage.getItem("MMK_U_name");
     const storedUserEmail = localStorage.getItem("MMK_U_email");
 
-    console.log(storedUserName)
-    console.log(storedUserEmail);
     if (!storedId || !storedUserName || !storedUserEmail) {
       toast.error("Please log in to join.");
       return;
     }
 
-
-
-    // const userId = parseInt(storedId.replace("MMK_U_", ""), 10);
     const userId = storedId; // keep as string "MMK_U_1234"
     const userName = storedUserName;
     const userEmail = storedUserEmail;
-
 
     try {
       const res = await fetch(
@@ -248,60 +180,37 @@ const Events = () => {
         return;
       }
 
-
       localStorage.setItem("MMK_E_event_id", eventId);
       localStorage.setItem("MMK_E_event_name", eventName);
-      console.log(eventId);
-      console.log(eventName);
-
-        navigate("/join-event-payment");
-    
+      navigate("/join-event-payment");
     } catch (error) {
       console.error("Error checking join status:", error);
       toast.error("Something went wrong. Please try again.");
     }
   };
 
-
-
-
   const handleViewEvent = (event: Event) => {
     setSelectedEvent(event);
     setIsEventDetailsDialogOpen(true);
   };
 
+  // const handleDateSelect = (offset: number) => {
+  //   const date = new Date();
+  //   date.setDate(date.getDate() + offset);
+  //   setSelectedDate(date);
+  // };
 
-  const handleDateSelect = (offset) => {
-    const date = new Date();
-    date.setDate(date.getDate() + offset);
-    setSelectedDate(date);
+  const handleDateSelect = (offset: number) => {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset); // midnight local time
+    setSelectedDate(midnight);
   };
-
-
-
-
-
-
-  // // ✅ Filtered Events Logic (fixed from programsData)
-  // const filteredEvents = events.filter(event => {
-  //   const matchesSearch =
-  //     event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     event.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-  //   const matchesCategory =
-  //     selectedCategory === "All" || event.category === selectedCategory;
-
-  //   return matchesSearch && matchesCategory;
-  // });
-
-
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-20">
         <div className="flex flex-col gap-8">
-          {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gradient-primary">Discover & Join Live Learning Events</h1>
@@ -313,8 +222,6 @@ const Events = () => {
             </Button>
           </div>
 
-
-          {/* Search and Filter */}
           <section className="py-8 px-4">
             <div className="container mx-auto">
               <div className="glass-card p-6 rounded-xl">
@@ -338,24 +245,8 @@ const Events = () => {
                     <Filter className="h-4 w-4" />
                     Filters
                   </Button>
-                  {/* <Select>
-                    <SelectTrigger className="w-full md:w-[180px] bg-transparent border-white/20">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date-asc">Soonest First</SelectItem>
-                      <SelectItem value="date-desc">Latest First</SelectItem>
-                      <SelectItem value="popularity">Most Popular</SelectItem>
-                      <SelectItem value="recent">Recently Added</SelectItem>
-                    </SelectContent>
-                  </Select> */}
-
                 </div>
 
-
-
-
-                {/* Date Filter Buttons */}
                 <div className="mt-4 flex items-center">
                   <TooltipProvider>
                     <Tooltip>
@@ -394,7 +285,6 @@ const Events = () => {
                     })}
 
                     <Button
-
                       className="text-sm bg-purple-500 text-white-400 "
                       onClick={() => {
                         setSearchQuery("");
@@ -404,18 +294,12 @@ const Events = () => {
                     >
                       Reset Filters
                     </Button>
-
-
-
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-
-
-          {/* Events Section */}
           {loading ? (
             <div className="text-center text-gray-400 py-10">Loading events...</div>
           ) : error ? (
@@ -435,12 +319,11 @@ const Events = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event) => (
-                <Card key={event.id} className="bg-secondary/40 border-white/10 overflow-hidden hover:border-mmk-purple/60  transition-all">
+                <Card key={event.id} className="bg-secondary/40 border-white/10 overflow-hidden hover:border-mmk-purple/60 transition-all">
                   {event.imageUrl && (
-                    <div className="relative  overflow-hidden">
-
+                    <div className="relative overflow-hidden">
                       <img
                         src={event.imageUrl}
                         alt={event.title}
@@ -449,64 +332,94 @@ const Events = () => {
                     </div>
                   )}
 
-
-
                   <CardHeader className="pb-2">
-
-                    <CardTitle className="text-lg font-semibold line-clamp-2">{event.title}</CardTitle>
+                    <CardTitle className=" font-semibold line-clamp-2">{event.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-gray-300 line-clamp-2">{event.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
+
+                    <div className="space-y-4 text-s text-gray-300">
+                      <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-mmk-purple" />
-                        {event.date.split("T")[0]}
+                        <span>
+                          <strong>Registration From:</strong>{" "}
+                          {formatDateDisplay(event.start_date)} <strong>to</strong>{" "}
+                          {formatDateDisplay(event.end_date)}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
+
+
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-mmk-purple" />
+                        <span>
+                          <strong>Event Starts:</strong> {formatDateDisplay(event.date)}
+                        </span>
+                      </div>
+                      {/* <div className="flex items-center gap-2 text-sm text-gray-300">
                         <Clock className="h-4 w-4 text-mmk-amber" />
-                        {event.time}
-                      </div>
+                        Time: {event.time}
+                      </div> */}
                       <div className="flex items-center gap-2 text-sm text-gray-300">
                         <MapPin className="h-4 w-4 text-mmk-purple" />
-                        {event.location}
+                        Location: {event.location}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-300">
+
+                        Members Limit: {event.attendance_limit}
                       </div>
                     </div>
+
+
+                    
                     <div className="flex justify-between items-center text-sm text-gray-400">
                       <div>By: {event.organizer}</div>
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
                         {event.attendees} attending
                       </div>
+
+
+                      {/*<div className="pt-4"> */}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const url = `${window.location.origin}/guest-join-payment?event_id=${event.id}&event_name=${encodeURIComponent(event.title)}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success("Join link copied to clipboard!");
+                        }}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        Share Event Join Link
+                      </Button>
                     </div>
+
+
+
+
                   </CardContent>
                   <CardFooter className="pt-0 flex justify-between">
                     <Button variant="outline" className="border-white/20 hover:bg-mmk-purple/10 hover:border-mmk-purple/60" onClick={() => handleViewEvent(event)}>
                       Details
                     </Button>
-                    {/* <Button
-                      className="bg-mmk-purple hover:bg-mmk-purple/90"
-                      onClick={() => handleJoinEvent(event.id)}
-                    >
-                      Join Event
-                    </Button> */}
                     <Button
                       className="bg-mmk-purple hover:bg-mmk-purple/90 text-white"
                       onClick={() => handleJoinEvent(event.id, event.title)}
-                      disabled={event.isEnrolled}
+                      disabled={
+                        event.isEnrolled ||
+                        new Date() > new Date(event.end_date) || // after event end
+                        new Date() < new Date(event.start_date) || // before event start
+                        event.attendees >= event.attendance_limit // attendee limit reached
+                      }
                     >
                       {event.isEnrolled ? "Joined" : "Join Now"}
                     </Button>
-
-
                   </CardFooter>
                 </Card>
               ))}
             </div>
           )}
         </div>
-
-
-
 
         {/* Create Event Dialog */}
         <Dialog open={isCreateEventDialogOpen} onOpenChange={setIsCreateEventDialogOpen}>
@@ -517,73 +430,137 @@ const Events = () => {
             </DialogHeader>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const file = formData.get("image") as File;
-                const imageUrl = file && file.size > 0 ? URL.createObjectURL(file) : null;
+                formData.append("user_id", localStorage.getItem("MMK_U_user_id"));
+                formData.append("user_name", localStorage.getItem("MMK_U_name"));
+                formData.append("email", localStorage.getItem("MMK_U_email"));
 
-                const newEvent: Event = {
-                  id: Date.now().toString(),
-                  title: formData.get("title") as string,
-                  description: formData.get("description") as string,
-                  date: formData.get("date") as string,
-                  time: formData.get("time") as string,
-                  location: formData.get("location") as string,
-                  organizer: formData.get("organizer") as string,
-                  attendees: 0,
+                try {
+                  const res = await axios.post("http://localhost:5000/events/user-create-event", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                  });
 
-                  imageUrl: imageUrl || undefined, // optional field
-                };
-                setEvents((prev) => [...prev, newEvent]);
-                setIsCreateEventDialogOpen(false);
+                  toast.success("Event created successfully!");
+
+                  // Optional: Refresh event list or append to UI
+                  setEvents((prev) => [...prev, res.data]);
+                  setIsCreateEventDialogOpen(false);
+                } catch (err) {
+                  console.error(err);
+                  toast.error("Failed to create event.");
+                }
               }}
               className="space-y-4"
             >
-              <Input name="title" placeholder="Event Title" required />
-              <Textarea name="description" placeholder="Event Description" required />
-              <div className="flex gap-4">
-                <Input type="date" name="date" required />
-                <Input type="time" name="time" required />
-              </div>
-              <Input name="location" placeholder="Location" required />
-              <Input name="organizer" placeholder="Organizer Name" required />
-              <Select name="tag">
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a tag" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Image Upload */}
               <div>
-                <label className="block text-sm mb-1 font-medium text-white">Event Image (Optional)</label>
-                <Input type="file" name="image" accept="image/*" />
+                <label className="block text-sm font-medium text-gray-300">Event Title</label>
+                <Input className="border-2 border-gray-700 rounded-md p-2" name="title" placeholder="Event Title" required />
               </div>
+
+              <div>
+                <label className="block text-gray-300 text-sm font-medium ">Description</label>
+                <Textarea className="border-2 border-gray-700 rounded-md p-2" name="description" placeholder="Event Description" required />
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Event Starts From</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="date" name="date" required />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Time</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="time" name="time" required />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Location</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="location" placeholder="Location" required />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Mail</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="email" placeholder="Your mail" required />
+                </div>
+
+
+              </div>
+
+              <div className="flex gap-4">
+
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Event Price</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="price" placeholder="(Example:₹100) or Free" required />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Organizer</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="organizer" placeholder="Organizer Name" required />
+                </div>
+              </div>
+
+
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Registration Start Date</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="date" name="startDate" required />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Registration End Date</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="date" name="endDate" required />
+                </div>
+
+              </div>
+
+              <div className="flex gap-4">
+
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Attendees Limit*</label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="number" name="limit" placeholder="Limit" min={1} required />
+                </div>
+
+
+
+
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Category</label>
+                  <select name="category" required className="w-full bg-mmk-dark text-white p-2 rounded-md border-2 border-gray-700 ">
+                    <option value="">Select Category</option>
+                    {EVENT_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Event Image </label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="file" name="image" accept="image/*" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-300">Event Qr Code Image </label>
+                  <Input className="border-2 border-gray-700 rounded-md p-2" type="file" name="qrcode" accept="image/*" />
+                </div>
+              </div>
+
+
+
+
+
 
               <DialogFooter className="pt-4">
-                <Button type="submit" className="bg-mmk-purple hover:bg-mmk-purple/90">
-                  Create Event
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsCreateEventDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
+                <Button type="submit" className="bg-mmk-purple hover:bg-mmk-purple/90">Create Event</Button>
+                <Button type="button" variant="ghost" onClick={() => setIsCreateEventDialogOpen(false)}>Cancel</Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
-
-
 
         {/* Event Details Dialog */}
         <Dialog open={isEventDetailsDialogOpen} onOpenChange={setIsEventDetailsDialogOpen}>
@@ -601,6 +578,7 @@ const Events = () => {
                 <Clock className="h-5 w-5 text-mmk-amber" />
                 <span>{selectedEvent?.time}</span>
               </div>
+
               <div className="flex gap-4">
                 <MapPin className="h-5 w-5 text-mmk-purple" />
                 <span>{selectedEvent?.location}</span>
@@ -619,7 +597,7 @@ const Events = () => {
         </Dialog>
 
       </main>
-
+      <Footer />
     </div>
   );
 };

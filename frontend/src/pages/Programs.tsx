@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProgramCard from "@/components/ProgramCard";
@@ -22,6 +22,10 @@ interface Program {
   date: string;
   category: string;
   isEnrolled?: boolean;
+  start_date?: string;
+  end_date?: string;
+  attendees: number;
+  attendance_limit: number;
 }
 
 const Programs = () => {
@@ -52,7 +56,7 @@ const Programs = () => {
         }
 
         // Pass user_id as query param if available
-        const url = userId ? `http://localhost:5000/programs?user_id=${userId}` : "http://localhost:5000/programs";
+        const url = userId ? `http://localhost:5000/programs/non-complete?user_id=${userId}` : "http://localhost:5000/programs/non-complete";
         const res = await axios.get(url);
 
 
@@ -63,6 +67,8 @@ const Programs = () => {
           isCertified: Boolean(p.isCertified),
           isLive: Boolean(p.isLive),
           isEnrolled: Boolean(p.isEnrolled),
+          end_date: p.end_date ?? undefined,
+          start_date: p.start_date ?? undefined,
         }));
 
         setProgramsData(data);
@@ -282,8 +288,26 @@ const Programs = () => {
                       isCertified={Boolean(program.isCertified)}
                       isFree={Boolean(program.isFree)}
                       isLive={Boolean(program.isLive)}
-                      isEnrolled={Boolean(program.isEnrolled)}
+                      // isEnrolled={Boolean(program.isEnrolled)}
+                      disabled={program.isEnrolled ||
+                        new Date() > new Date(program.end_date) || // after event end
+                        new Date() < new Date(program.start_date) || // before event start
+                        program.attendees >= program.attendance_limit // attendee limit reached
+                      }
+                      
                     />
+                    <Button
+    variant="outline"
+    onClick={() => {
+      const url = `${window.location.origin}/guest-program-join-payment?program_id=${program.id}&program_name=${encodeURIComponent(program.title)}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Join link copied to clipboard!");
+    }}
+    className="flex items-center gap-2 text-sm"
+  >
+    <Share2 className="w-4 h-4" />
+    Share Event Join Link
+  </Button>
                   </div>
                 ))}
               </div>

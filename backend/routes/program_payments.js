@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const fs = require('fs');
+require("dotenv").config();
 
 
 // Setup multer to store uploaded files in "uploads/" folder
@@ -35,7 +36,7 @@ const upload = multer({
 router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, res) => {
   const { userId, transactionId } = req.body;
   const programId = req.params.id;
-   const paymentImage = req.file;
+  const paymentImage = req.file;
 
   if (!userId || !transactionId || !programId || !paymentImage) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -72,84 +73,40 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
 });
 
 
-//admin-approval
-router.post("/:id/accept-payment", async (req, res) => {
-  const programId = req.params.id;
-  const { userId } = req.body;
-
-  if (!userId || !programId) {
-    return res.status(400).json({ error: "Missing user or Program ID" });
-  }
-
-  try {
-    // Get payment request
-    const [[request]] = await db.query(
-      "SELECT * FROM program_payment_requests WHERE user_id = ? AND program_id = ? AND status = 'pending'",
-      [userId, programId]
-    );
-
-    if (!request) {
-      return res.status(404).json({ error: "No pending request found" });
-    }
-
-    // Add user to program
-    await db.query(
-      "INSERT INTO program_attendees (user_id, program_id, transaction_id) VALUES (?, ?, ?)",
-      [userId, programId, request.transaction_id]
-    );
-
-    // Update attendees count
-    await db.query(
-      `UPDATE programs SET attendees = (
-        SELECT COUNT(*) FROM program_attendees WHERE program_id = ?
-      ) WHERE id = ?`,
-      [programId, programId]
-    );
-
-    // Update payment request status
-    await db.query(
-      "UPDATE program_payment_requests SET status = 'approved' WHERE user_id = ? AND program_id = ?",
-      [userId, programId]
-    );
-
-    // Send confirmation email
-    const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [userId]);
-    const [[program]] = await db.query("SELECT title FROM programs WHERE id = ?", [programId]);
-    if (user && program) {
-      await sendConfirmationEmail(user.email, program.title);
-    }
-
-    res.json({ message: "Payment approved and user added to program" });
-  } catch (err) {
-    console.error("Admin accept error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 
-async function sendConfirmationEmail(toEmail, paymentTitle) {
+
+async function sendConfirmationEmail(toEmail, programTitle) {
+  console.log("✉️ Preparing to send confirmation email to:", toEmail);
+
   let transporter = nodemailer.createTransport({
     service: "gmail", // Use Gmail service
     auth: {
-      user: "heckerbeluga197@gmail.com",
-      pass: "mimtprtalkucuxbh", // Use your Gmail App Password here
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
-  await transporter.sendMail({
-    from: '"MMK Universe Team" <heckerbeluga197@gmail.com>',
-    to: toEmail,
-    subject: `Registration confirmed for ${paymentTitle}`,
-    text: `Hello! Your registration for the program "${paymentTitle}" is confirmed. Thank you!`,
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: `"MMK Universe Team" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: `Registration confirmed for ${programTitle}`,
+      text: `Hello! Your registration for the program "${programTitle}" is confirmed. Thank you!`,
+    });
+
+    console.log("✅ Email sent:", info.messageId);
+  } catch (err) {
+    console.error("❌ Failed to send email:", err);
+  }
 }
 
 
 
 // Get pending payment requests
 router.get("/payment-requests", async (req, res) => {
-  try{
-  const [rows] = await db.query(`
+  try {
+    const [rows] = await db.query(`
  
 SELECT 
         ppr.id,
@@ -165,10 +122,10 @@ SELECT
     WHERE ppr.status = 'pending'
     ORDER BY ppr.created_at DESC
   `);
-  res.json(rows);
+    res.json(rows);
   }
-  catch(err){
-     console.error("Fetch error:", err);
+  catch (err) {
+    console.error("Fetch error:", err);
     res.status(500).json({ error: "Server error" });
   }
 
@@ -186,67 +143,95 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
     const [[request]] = await db.query("SELECT * FROM program_payment_requests WHERE id = ?", [id]);
     if (!request) return res.status(404).json({ error: "Request not found" });
 
+    const { user_id, program_id, transaction_id, payment_image_path, submission_type,
+      guest_name,
+      guest_email, } = request;
+
+    // 2. Prevent duplicates
+    let existing;
+    if (submission_type === "guest") {
+      [existing] = await db.query(
+        "SELECT * FROM program_attendees WHERE guest_email = ? AND program_id = ?",
+        [guest_email, program_id]
+      );
+    } else {
+      [existing] = await db.query(
+        "SELECT * FROM program_attendees WHERE user_id = ? AND program_id = ?",
+        [user_id, program_id]
+      );
+    }
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "User already joined" });
+    }
 
 
-
-
-    const { user_id, program_id, transaction_id, payment_image_path  } = request;
-
-    // Prevent duplicates
-    const [existing] = await db.query("SELECT * FROM program_attendees WHERE user_id = ? AND program_id = ?", [user_id, program_id]);
-    if (existing.length > 0) return res.status(400).json({ error: "User already enrolled" });
-
-
-
-
-    // Approve
-    await db.query(`
+    // 3. Approve and insert into program_attendees
+    if (submission_type === "guest") {
+      await db.query(
+        `INSERT INTO program_attendees (program_id, transaction_id, guest_name, guest_email)
+            VALUES (?, ?, ?, ?)`,
+        [program_id, transaction_id, guest_name, guest_email]
+      );
+    } else {
+      await db.query(`
       INSERT INTO program_attendees (user_id, program_id, transaction_id)
       VALUES (?, ?, ?)
     `, [user_id, program_id, transaction_id]);
 
+      }
 
-
-    await db.query(`
+      await db.query(`
       UPDATE programs SET attendees = (
         SELECT COUNT(*) FROM program_attendees WHERE program_id = ?
       ) WHERE id = ?
-    `, [program_id, program_id]);
+    `, [program_id, program_id]
+  );
 
-    //update attendees count
-    await db.query("UPDATE program_payment_requests SET status = 'approved' WHERE id = ?", [id]);
+      //update attendees count
+      await db.query(
+        "UPDATE program_payment_requests SET status = 'approved' WHERE id = ?",
+        [id]);
 
 
-   // Send confirmation email
-    const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [
-      user_id,
-    ]);
-    const [[program]] = await db.query("SELECT title FROM programs WHERE id = ?", [
-      program_id,
-    ]);
-    if (user && program) {
-      await sendConfirmationEmail(user.email, program.title);
+      // Delete uploaded image
+      if (payment_image_path) {
+        const filePath = path.join(__dirname, "../uploads", payment_image_path);
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Failed to delete image:", err);
+        });
+      }
+
+
+ // 7. Send confirmation email
+    let email, event_title;
+
+    if (submission_type === "guest") {
+      email = guest_email;
+    } else {
+      const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [user_id]);
+      email = user?.email;
     }
 
-    // Delete uploaded image
-    if (payment_image_path) {
-      const filePath = path.join(__dirname, "../uploads", payment_image_path);
-      fs.unlink(filePath, (err) => {
-        if (err) console.error("Failed to delete image:", err);
-      });
+    const [[program]] = await db.query("SELECT title FROM programs WHERE id = ?", [program_id]);
+    program_title = program?.title;
+
+    console.log("📨 Sending email to:", email, "for program:", program_title);
+
+
+
+    if (!email) {
+  console.error("❌ Email address is missing, cannot send confirmation");
+  return res.status(500).json({ error: "Missing recipient email" });
+}
+    await sendConfirmationEmail(email, program_title);
+
+      res.json({ message: "Payment approved and user added to Program" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
     }
-
-
-
-
-
-
-    res.json({ message: "Payment approved and user added to Program" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+  });
 
 
 
@@ -278,6 +263,59 @@ router.post("/payment-requests/:id/reject", async (req, res) => {
   }
 });
 
+
+
+
+router.post("/:id/guest-verify-payment", upload.single("paymentImage"), async (req, res) => {
+  const program_id = req.params.id;   // from URL param
+  const { guest_name, guest_email, transaction_id } = req.body;
+  const paymentImage = req.file;
+
+  if (!guest_name || !guest_email || !transaction_id || !paymentImage) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const isValidFormat = /^[A-Z0-9]{12}$/.test(transaction_id);
+  if (!isValidFormat) {
+    return res.status(400).json({ error: "Invalid transaction ID format" });
+  }
+
+  try {
+    const [existingRequest] = await db.query(
+      "SELECT * FROM program_payment_requests WHERE guest_email = ? AND program_id = ? AND status = 'pending'",
+      [guest_email, program_id]
+    );
+
+    if (existingRequest.length > 0) {
+      return res.status(400).json({ error: "Already submitted. Awaiting approval." });
+    }
+
+
+    const [alreadyAttending] = await db.query(
+      `SELECT * FROM program_attendees 
+       WHERE guest_email = ? AND program_id = ?`,
+      [guest_email, program_id]
+    );
+
+    if (alreadyAttending.length > 0) {
+      return res.status(400).json({ error: "You have already joined this program." });
+    }
+
+
+
+    await db.query(
+      `INSERT INTO program_payment_requests 
+        (program_id, transaction_id, payment_image_path, guest_name, guest_email, status,submission_type)
+       VALUES (?, ?, ?, ?, ?, 'pending','guest')`,
+      [program_id, transaction_id, paymentImage.filename, guest_name, guest_email]
+    );
+
+    res.status(200).json({ message: "Guest request submitted. Awaiting approval." });
+  } catch (err) {
+    console.error("Error in guest verify:", err);
+    res.status(500).json({ error: "Transaction Id already existed" });
+  }
+});
 
 
 

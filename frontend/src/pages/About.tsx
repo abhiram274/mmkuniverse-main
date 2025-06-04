@@ -14,31 +14,39 @@ interface TeamMember {
 
 const About = () => {
   const [currentTime] = useState(new Date());
-  
+
   const teamMembers: TeamMember[] = [
     {
-      name: "Michael Johnson",
+      name: "Mohith Kumar ",
       position: "CEO & Founder",
-      bio: "Michael founded MMK Universe in 2020 with the vision of creating a collaborative learning ecosystem where individuals could grow, share, and thrive together.",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+      bio: "Mohith founded MMK Universe in 2020 with the vision of creating a collaborative learning ecosystem where individuals could grow, share, and thrive together.",
+      image: "/src/pages/ABOUT-MOHITH.jpg"
     },
     {
-      name: "Sarah Chen",
+      name: "----",
       position: "CTO",
-      bio: "With over 15 years in tech leadership, Sarah oversees all technical aspects of MMK Universe, ensuring our platform uses cutting-edge technologies.",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+     bio:"",
+      // bio: "With over 15 years in tech leadership, Sarah oversees all technical aspects of MMK Universe, ensuring our platform uses cutting-edge technologies.",
+      // image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+      image: ""
+
     },
     {
-      name: "David Williams",
+      name: "----",
       position: "CFO",
-      bio: "David brings 12+ years of financial expertise to MMK Universe, managing our fiscal strategy and sustainable growth initiatives.",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+     bio:"",
+      // bio: "David brings 12+ years of financial expertise to MMK Universe, managing our fiscal strategy and sustainable growth initiatives.",
+      // image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+      image: ""
+
     },
     {
-      name: "Priya Patel",
+      name: "----",
       position: "Operations Manager",
-      bio: "Priya ensures smooth day-to-day operations across all MMK Universe programs, communities, and initiatives with exceptional attention to detail.",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+      bio:"",
+      // bio: "Priya ensures smooth day-to-day operations across all MMK Universe programs, communities, and initiatives with exceptional attention to detail.",
+      // image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
+      image: ""
     }
   ];
 
@@ -73,11 +81,11 @@ const About = () => {
                 At MMK Universe, we believe that true growth happens when knowledge is shared openly and skills are developed collaboratively. Our community-driven approach empowers individuals to learn from each other and succeed together.
               </p>
             </div>
-            
+
             <div className="glass-card p-6 rounded-xl">
               <h2 className="text-2xl font-bold mb-4 text-gradient-primary">Founder's Vision</h2>
               <p className="text-gray-300">
-                "I created MMK Universe because I saw a fundamental disconnect in how people learn and grow professionally. Traditional education systems and professional development often lack community, practical application, and real-world relevance. 
+                "I created MMK Universe because I saw a fundamental disconnect in how people learn and grow professionally. Traditional education systems and professional development often lack community, practical application, and real-world relevance.
               </p>
               <p className="mt-4 text-gray-300">
                 MMK Universe bridges this gap by fostering an ecosystem where learning is collaborative, knowledge is freely shared, and opportunities are abundant. Our goal is to help individuals not just learn, but truly thrive in their chosen fields through the power of community."
@@ -88,13 +96,16 @@ const About = () => {
 
           {/* Team Section */}
           <h2 className="text-3xl font-bold mb-8">Our <span className="text-gradient-primary">Leadership Team</span></h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 center lg:grid-cols-4 gap-6 mb-12 ">
+
+
+
             {teamMembers.map((member) => (
               <Card key={member.name} className="bg-white/5 border-white/10 overflow-hidden">
                 <div className="aspect-square overflow-hidden">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
+                  <img
+                    src={member.image}
+                    alt={member.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -106,6 +117,7 @@ const About = () => {
               </Card>
             ))}
           </div>
+
 
           {/* Community Values */}
           <div className="glass-card p-8 rounded-xl mb-10">
@@ -127,7 +139,7 @@ const About = () => {
                 <h3 className="text-xl font-semibold mb-2">Collaboration</h3>
                 <p className="text-gray-300">We believe the best ideas emerge when diverse minds work together</p>
               </div>
-              
+
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-mmk-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mmk-purple">
@@ -137,7 +149,7 @@ const About = () => {
                 <h3 className="text-xl font-semibold mb-2">Growth</h3>
                 <p className="text-gray-300">Continuous improvement is at the core of everything we do</p>
               </div>
-              
+
               <div className="text-center p-4">
                 <div className="w-16 h-16 bg-mmk-purple/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mmk-purple">

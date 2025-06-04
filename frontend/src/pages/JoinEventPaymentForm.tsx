@@ -7,12 +7,10 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Label } from "@radix-ui/react-label";
+import { dataTagSymbol } from "@tanstack/react-query";
 
-<<<<<<< HEAD
 // Replace with your QR image
-=======
- // Replace with your QR image
->>>>>>> origin/main
+// Replace with your QR image
 
 const JoinEventPaymentForm = () => {
   const navigate = useNavigate();
@@ -24,9 +22,14 @@ const JoinEventPaymentForm = () => {
     eventId: "",
     eventName: "",
     transactionId: "",
+    eventPrice: "",
   });
+  const [paymentImage, setPaymentImage] = useState<File | null>(null);
+  const [qrImageUrl, setQrImageUrl] = useState("");
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
     const storedUserId = localStorage.getItem("MMK_U_user_id") || "";
     const storedName = localStorage.getItem("MMK_U_name") || "";
     const storedEmail = localStorage.getItem("MMK_U_email") || "";
@@ -41,6 +44,28 @@ const JoinEventPaymentForm = () => {
       eventId: storedEventId,
       eventName: storedEventName,
     }));
+
+    if (storedEventId) {
+      const id = storedEventId;
+      fetch(`http://localhost:5000/events/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data)
+          if (data.qrcode) {
+            setQrImageUrl(`http://localhost:5000/uploads/${data.qrcode}`);
+          }
+          setFormData((prev) => ({
+            ...prev,
+            eventPrice: data.price || "", // fallback in case it's null
+          }));
+
+        })
+        .catch((err) => {
+          console.error("Failed to fetch event QR code:", err);
+          toast.error("Unable to load event QR code");
+        });
+    }
+
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,15 +83,15 @@ const JoinEventPaymentForm = () => {
       return;
     }
 
-      if (!paymentImage) {
-    toast.error("Please upload a payment screenshot.");
-    return;
-  }
-  
-  const submissionData = new FormData();
-  submissionData.append("userId", formData.userId);
-  submissionData.append("transactionId", formData.transactionId);
-  submissionData.append("paymentImage", paymentImage); // image file
+    if (!paymentImage) {
+      toast.error("Please upload a payment screenshot.");
+      return;
+    }
+
+    const submissionData = new FormData();
+    submissionData.append("userId", formData.userId);
+    submissionData.append("transactionId", formData.transactionId);
+    submissionData.append("paymentImage", paymentImage); // image file
 
 
 
@@ -82,7 +107,7 @@ const JoinEventPaymentForm = () => {
         //   transactionId: formData.transactionId,
         // }),
 
-              body: submissionData,
+        body: submissionData,
       });
 
       const data = await res.json();
@@ -98,11 +123,10 @@ const JoinEventPaymentForm = () => {
     }
   };
 
-<<<<<<< HEAD
-  const [paymentImage, setPaymentImage] = useState<File | null>(null);
 
 
-return (
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
       <Navbar />
 
@@ -114,22 +138,7 @@ return (
 
           <div className="space-y-4">
             <div>
-              <Label   htmlFor="userId" className="text-white">User ID</Label>
-=======
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
-      <Navbar />
-
-      <div className="flex justify-center items-center min-h-[calc(100vh-80px)] px-4">
-        <div className="w-full max-w-md bg-[#1b1b2f] rounded-2xl p-8 shadow-2xl border border-white/10">
-          <h1 className="text-3xl font-bold text-center mb-6 text-white">
-            Join Event Payment
-          </h1>
-
-       <div className="space-y-4">
-            <div>
               <Label htmlFor="userId" className="text-white">User ID</Label>
->>>>>>> origin/main
               <Input
                 id="userId"
                 disabled
@@ -183,16 +192,35 @@ return (
               />
             </div>
 
-            <div className="text-center mt-4">
+            {/* <div className="text-center mt-4">
               <img
                 src="/src/pages/QR-AbhiramKosuru.jpg"
                 alt="QR Code"
                 className="w-60 h-60 mx-auto rounded-lg border border-white/20 shadow-lg"
               />
               <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
+            </div> */}
+
+
+
+            <div className="text-center mt-4">
+              {qrImageUrl ? (
+                <img
+                  src={qrImageUrl}
+                  alt="Event QR Code"
+                  className="w-60 h-60 mx-auto rounded-lg border border-white/20 shadow-lg"
+                />
+              ) : (
+                <p className="text-center text-white/80">QR code loading...</p>
+              )}
+
+              <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
+              <strong className=" text-white/80 mt-2">Price: {formData.eventPrice}</strong>
+
             </div>
 
-<<<<<<< HEAD
+
+
 
 
             <div>
@@ -209,8 +237,6 @@ return (
 
 
 
-=======
->>>>>>> origin/main
             <div>
               <Label htmlFor="transactionId" className="text-white">Transaction ID</Label>
               <Input
@@ -233,11 +259,8 @@ return (
         </div>
       </div>
       <br />
-<<<<<<< HEAD
       {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
-=======
- {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
->>>>>>> origin/main
+      {/* className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6" */}
       <Footer />
     </div>
   );

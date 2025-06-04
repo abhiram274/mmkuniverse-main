@@ -13,6 +13,7 @@ interface PaymentRequest {
   status: "pending" | "approved" | "rejected";
   event_title: string;
   payment_image_path: string;
+  submission_type:string;
 }
 
 const ManageEventPayments = () => {
@@ -69,6 +70,7 @@ const ManageEventPayments = () => {
             <thead className="bg-gray-700">
               <tr>
                 <th className="px-4 py-2">User ID</th>
+                    <th className="px-4 py-2">User Type</th>
                 <th className="px-4 py-2">Event</th>
                 <th className="px-4 py-2">Event ID</th>
                 <th className="px-4 py-2">Image</th>
@@ -82,6 +84,8 @@ const ManageEventPayments = () => {
               {requests.map((req) => (
                 <tr key={req.id} className="border-t border-white/10">
                   <td className="px-4 py-2">{req.user_id}</td>
+                                    <td className="px-4 py-2">{req.submission_type}</td>
+
                   <td className="px-4 py-2">{req.event_title}</td>
                   <td className="px-4 py-2">{req.event_id}</td>
                 

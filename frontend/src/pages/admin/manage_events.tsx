@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "sonner";
 import Dashboard from "../Dashboard";
+import { Label } from "@radix-ui/react-label";
+import AttendeesModal from "@/components/AttendeesModal";
 
 const EVENT_CATEGORIES = [
   "Workshop",
@@ -27,29 +29,58 @@ interface Event {
   time: string;
   location: string;
   organizer: string;
-  attendees?: number;
   image?: string;
   category?: string;
   completed: boolean;
+  attendance_limit?: number; // <-- updated
+  start_date?: string;       // <-- updated
+  end_date?: string;
+  attendees: number;
+  price: string;
+  email: string;
 }
+const isValidDate = (dateStr: unknown) =>
+  typeof dateStr === "string" && !["", "null", "undefined"].includes(dateStr) && !isNaN(Date.parse(dateStr));
+
 
 const ManageEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
+  // const [attendeesForEvent, setAttendeesForEvent] = useState<any[]>([]);
+  const [attendees, setAttendees] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+    const [sendingType, setSendingType] = useState<null | 'joined' | 'participated'>(null);
+
+  // const [attendees, setAttendees] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     date: "",
+    startDate: "",
+    endDate: "",
     time: "",
     location: "",
     organizer: "",
     category: "",
     image: null as File | null,
+    limit: "",
+    qrCodeImage: null as File | null, // <-- added
+    price: "",
+    email: "",
   });
 
   const formatDateInput = (isoDate: string) => {
-    return isoDate.split("T")[0]; // Gets 'YYYY-MM-DD'
+    const date = new Date(isoDate);
+    // Adjust to local timezone by correcting offset
+    const tzOffsetInMs = date.getTimezoneOffset() * 60000;
+    const localDate = new Date(date.getTime() - tzOffsetInMs);
+    return localDate.toISOString().split("T")[0];
   };
 
+  const formatDateDisplay = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+  };
 
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -57,10 +88,55 @@ const ManageEvents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const EVENTS_PER_PAGE = 5;
 
+  //Fetch attendees
+  const fetchAttendees = async (eventId: number) => {
+    try {
+      const res = await fetch(`http://localhost:5000/events/${eventId}/attendees`);
+      const data = await res.json();
+ console.log("Fetched attendees:", data);
+      //  setAttendeesForEvent(data.attendees);
+      setAttendees(data.attendees || []);
+      setSelectedEventId(eventId);
+      //setAttendees(data.attendees);
+      setShowModal(true);
+    } catch (err) {
+      toast.error("Failed to fetch attendees");
+    }
+  };
+
+
+  //Mark as participated
+
+  const markAsParticipated = async (eventId: number, userId: string | null, guestEmail: string | null) => {
+    try {
+      const res = await fetch(`http://localhost:5000/events/${eventId}/mark-participation`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ userId, guestEmail })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Marked as participated");
+        fetchAttendees(eventId); // Refresh list
+      } else {
+        toast.error(data.error || "Failed to mark participation");
+      }
+    } catch (err) {
+      toast.error("Failed to mark participation");
+    }
+  };
+
+  //fetch events
   const fetchEvents = async () => {
     try {
       const res = await fetch("http://localhost:5000/events"); // Corrected URL
       const data = await res.json();
+
+      console.log("Fetched events:", data);
       setEvents(data);
     } catch (err) {
       console.error("Error fetching events:", err);
@@ -78,12 +154,28 @@ const ManageEvents = () => {
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("date", (formData.date));
+      data.append("startDate", formData.startDate);
+
+
+      data.append("endDate", formData.endDate);
+
+
+
+      data.append("limit", formData.limit);
+
+
+
       data.append("time", formData.time);
       data.append("location", formData.location);
       data.append("organizer", formData.organizer);
       data.append("category", formData.category);
+      data.append("price", formData.price);
+      data.append("email", formData.email);
       if (formData.image) {
         data.append("image", formData.image);
+      }
+      if (formData.qrCodeImage) {
+        data.append("qrcode", formData.qrCodeImage); // <-- added
       }
 
       const endpoint = editingId
@@ -99,7 +191,7 @@ const ManageEvents = () => {
 
       if (res.ok) {
         toast.success(editingId ? "Event updated" : "Event created");
-        setFormData({ title: "", description: "", date: "", time: "", location: "", organizer: "", category: "", image: null });
+        setFormData({ title: "", description: "", date: "", startDate: "", endDate: "", time: "", location: "", organizer: "", category: "", image: null, limit: "", qrCodeImage: null, price: "", email: "", });
         setEditingId(null);
         fetchEvents();
       } else {
@@ -136,19 +228,31 @@ const ManageEvents = () => {
 
 
   const handleEdit = (event: Event) => {
+    console.log("Editing Event:", event);
+
     setEditingId(event.id);
     setFormData({
       title: event.title,
       description: event.description,
-      date: formatDateInput(event.date), // ✅ Format date here
+      date: isValidDate(event.date) ? formatDateInput(event.date) : "",
+      startDate: event.start_date ? formatDateInput(event.start_date) : "",
+      endDate: event.end_date ? formatDateInput(event.end_date) : "",
+
       time: event.time,
       location: event.location,
       organizer: event.organizer,
       category: event.category || "",
       image: null,
+      limit: event.attendance_limit?.toString() || "",
+      qrCodeImage: null,
+      price: event.price,
+      email: event.email,
+
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+
 
   const handleDelete = async (id: number) => {
     try {
@@ -193,56 +297,196 @@ const ManageEvents = () => {
               <CardTitle>{editingId ? "Edit Event" : "Create New Event"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                placeholder="Event Title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
-              <Textarea
-                placeholder="Event Description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-              <div className="grid grid-cols-2 gap-4">
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Event Title</label>
                 <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                />
-                <Input
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  placeholder="Event Title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
-              <Input
-                placeholder="Location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-              <Input
-                placeholder="Organizer"
-                value={formData.organizer}
-                onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
-              />
-              <Select
-                onValueChange={(val) => setFormData({ ...formData, category: val })}
-                value={formData.category}
-              >
-                <SelectTrigger className="bg-transparent border-white/20">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
-              />
+
+
+
+              <div>
+                <label className="block text-gray-300 text-sm font-medium ">Description</label>
+                <Textarea
+                  placeholder="Event Description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Registration Start Date</label>
+                  <Input
+                    placeholder="registration starting date"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Registration End Date</label>
+                  <Input
+                    placeholder="registration ending date"
+
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endDate: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Event Starts From</label>
+                  <Input
+                    placeholder="Event starts"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Time</label>
+                  <Input
+                    type="time"
+                    value={formData.time}
+                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  />
+                </div>
+              </div>
+
+
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-300">Location</label>
+                <Input
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                />
+              </div>
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Mail</label>
+
+                <Input
+                  placeholder="Your Mail"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+              </div>
+
+
+
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Event Price</label>
+
+                <Input
+                  placeholder="(Example:₹100) or Free"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                />
+              </div>
+
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Organizer</label>
+
+                <Input
+                  placeholder="Organizer"
+                  value={formData.organizer}
+                  onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
+                />
+              </div>
+
+
+              {/* <Input
+                placeholder="Attendees"
+                value={formData.attendees}
+                disabled
+                onChange={(e) => setFormData({ ...formData, attendees: e.target.value })}
+              /> */
+              }
+
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Category</label>
+                <Select
+                  onValueChange={(val) => setFormData({ ...formData, category: val })}
+                  value={formData.category}
+                >
+                  <SelectTrigger className="bg-transparent border-white/20">
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+
+
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Attendees Limit*</label>
+                <Input
+                  type="number"
+                  placeholder="Limit of Attendees"
+                  value={formData.limit}
+                  onChange={(e) =>
+                    setFormData({ ...formData, limit: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-300">Event Image </label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+                />
+              </div>
+
+
+              <div>
+
+
+                <Label className="block text-sm font-medium text-gray-300" htmlFor="qrCodeImage" style={{ marginTop: "20px" }}>QR Code Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setFormData({ ...formData, qrCodeImage: e.target.files?.[0] || null })
+                  }
+                />
+              </div>
+
+
             </CardContent>
             <CardFooter>
               <Button onClick={handleSubmit} className="bg-mmk-purple hover:bg-mmk-purple/90 w-full">
@@ -277,13 +521,19 @@ const ManageEvents = () => {
                     <th className="px-4 py-2">Time</th>
                     <th className="px-4 py-2">Category</th>
                     <th className="px-4 py-2">Actions</th>
+                    <th className="px-4 py-2">View Attendees</th>
+                    <th className="px-4 py-2">Export Excel</th>
+                    <th className="px-4 py-2">Send Certificate</th>
+                    <th className="px-4 py-2">Send Certficate</th>
+
+
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedEvents.map((event) => (
                     <tr key={event.id} className="border-t border-white/10">
                       <td className="px-4 py-2">{event.title}</td>
-                      <td className="px-4 py-2">{event.date.split("T")[0]}</td>
+                      <td className="px-4 py-2">{formatDateDisplay(event.date)}</td>
                       <td className="px-4 py-2">{event.time}</td>
                       <td className="px-4 py-2">{event.category}</td>
                       <td className="px-4 py-2">
@@ -299,13 +549,11 @@ const ManageEvents = () => {
 
 
 
-
-
                           {event.completed ? (
 
                             <Button disabled className="bg-red-600 text-xs px-3 py-1 cursor-not-allowed">Delete</Button>
                           ) : (
-                          <Button onClick={() => handleDelete(event.id)} className="bg-red-600 text-xs px-3 py-1">Delete</Button>
+                            <Button onClick={() => handleDelete(event.id)} className="bg-red-600 text-xs px-3 py-1">Delete</Button>
                           )}
 
 
@@ -323,10 +571,84 @@ const ManageEvents = () => {
                         </div>
                       </td>
 
+                      <td className="px-4 py-2">
+
+
+                        <Button className="bg-gray-700 text-xs px-3 py-1" onClick={() => fetchAttendees(event.id)}>View Attendees</Button>
+                        {showModal && (
+                          <AttendeesModal
+                            attendees={attendees}
+                            onClose={() => setShowModal(false)}
+                            onMarkParticipated={(userId, guestEmail) =>
+                              markAsParticipated(selectedEventId, userId, guestEmail)
+                            }
+                          />
+                        )}
+                        {/* <Button
+                          className="bg-gray-700 text-xs px-3 py-1"
+                          onClick={() => fetchAttendees(event.id)}
+                        >
+                          View Attendees
+                        </Button> */}
+
+                      </td>
+
+                      <td className="px-4 py-2">
+                        <Button
+                          className="bg-yellow-500 text-xs px-3 py-1"
+                          onClick={() => window.open(`http://localhost:5000/events/${event.id}/export-excel`, "_blank")}
+                        >
+                          Export Excel
+                        </Button>
+
+
+                      </td>
+
+
+         <td className="px-4 py-2">
+                          <Button
+                            className="bg-purple-700 text-xs px-3 py-1"
+                            disabled={sendingType === 'joined'}
+                            onClick={() => {
+                              setSendingType('joined');
+                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=joined`, {
+                                method: "POST",
+                              })
+                                .then((res) => res.json())
+                                .then((data) => toast.success(data.message))
+                                .catch(() => toast.error("Failed to send certificates"))
+                                .finally(() => setSendingType(null));
+                            }}
+                          >
+                            {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
+                          </Button>
+                        </td>
+
+                        <td className="px-4 py-2">
+                          <Button
+                            className="bg-indigo-700 text-xs px-3 py-1"
+                            disabled={sendingType === 'participated'}
+                            onClick={() => {
+                              setSendingType('participated');
+                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=participated`, {
+                                method: "POST",
+                              })
+                                .then((res) => res.json())
+                                .then((data) => toast.success(data.message))
+                                .catch(() => toast.error("Failed to send certificates"))
+                                .finally(() => setSendingType(null));
+                            }}
+                          >
+                            {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
+                          </Button>
+                        </td>
+
+
                     </tr>
                   ))}
                 </tbody>
               </table>
+
             </div>
 
             {/* Pagination Controls */}

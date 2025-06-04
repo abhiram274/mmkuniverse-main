@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { toast } from "sonner";
 import Dashboard from "../Dashboard";
 import { useNavigate } from "react-router-dom";
+import { Label } from "@radix-ui/react-label";
 
 const PROGRAM_CATEGORIES = [
     "Tech",
@@ -33,10 +34,23 @@ interface Program {
     date: string;
     category: string;
     completed: boolean;
+    attendance_limit?: number; // <-- updated
+    start_date?: string;       // <-- updated
+    end_date?: string;
+    location?: string;
+    email: string;
 }
+
+
+const isValidDate = (dateStr: unknown) =>
+    typeof dateStr === "string" && !["", "null", "undefined"].includes(dateStr) && !isNaN(Date.parse(dateStr));
+
+
+
 
 const ManagePrograms = () => {
     const [programs, setPrograms] = useState<Program[]>([]);
+
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -46,8 +60,14 @@ const ManagePrograms = () => {
         isLive: false,
         duration: "",
         date: "",
+        startDate: "",
+        endDate: "",
         category: "",
         image: null as File | null,
+        limit: "",
+        location: "",
+        qrCodeImage: null as File | null, // <-- added
+        email: "",
     });
 
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -57,8 +77,13 @@ const ManagePrograms = () => {
     const navigate = useNavigate();
 
     const formatDateInput = (isoDate: string) => {
-        return isoDate.split("T")[0]; // Gets 'YYYY-MM-DD'
+        const date = new Date(isoDate);
+        // Adjust to local timezone by correcting offset
+        const tzOffsetInMs = date.getTimezoneOffset() * 60000;
+        const localDate = new Date(date.getTime() - tzOffsetInMs);
+        return localDate.toISOString().split("T")[0];
     };
+
 
 
     const fetchPrograms = async () => {
@@ -81,11 +106,16 @@ const ManagePrograms = () => {
             const data = new FormData();
             Object.entries(formData).forEach(([key, value]) => {
                 if (key === "image" && value) {
-                    data.append(key, value as Blob);
-                } else {
+                    data.append("image", value as Blob);
+                } else if (key === "qrCodeImage" && value) {
+                    data.append("qrcode", value as Blob); // 🔥 Fix is here
+                } else if (typeof value === "boolean") {
+                    data.append(key, value ? "true" : "false");
+                } else if (value !== null && value !== undefined) {
                     data.append(key, String(value));
                 }
             });
+
 
             const endpoint = editingId
                 ? `http://localhost:5000/programs/${editingId}`
@@ -109,8 +139,14 @@ const ManagePrograms = () => {
                     isLive: false,
                     duration: "",
                     date: "",
+                    startDate: "",
+                    endDate: "",
                     category: "",
                     image: null,
+                    limit: '',
+                    location: '',
+                    qrCodeImage: null,
+                    email: ''
                 });
                 setEditingId(null);
                 fetchPrograms();
@@ -118,6 +154,8 @@ const ManagePrograms = () => {
                 const errorData = await res.json();
                 toast.error(`Failed to submit: ${errorData.error}`);
             }
+
+            navigate("/manage_programs")
         } catch (err) {
             console.error(err);
             toast.error("Submission failed");
@@ -135,8 +173,15 @@ const ManagePrograms = () => {
             isLive: program.isLive,
             duration: program.duration,
             date: formatDateInput(program.date),
+            startDate: program.start_date ? formatDateInput(program.start_date) : "",
+            endDate: program.end_date ? formatDateInput(program.end_date) : "",
+
             category: program.category,
             image: null,
+            limit: program.attendance_limit?.toString() || "",
+            location: program.location,
+            qrCodeImage: null,
+            email: program.email,
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -144,22 +189,22 @@ const ManagePrograms = () => {
 
 
 
-  const handleComplete = async (id: number) => {
-    try {
-      const res = await fetch(`http://localhost:5000/programs/${id}/complete`, {
-        method: "PUT",
-      });
-      if (res.ok) {
-        toast.success("program marked as completed");
-        fetchPrograms();
-      } else {
-        toast.error("Failed to complete program");
-      }
-    } catch (err) {
-      console.error("Error completing program:", err);
-      toast.error("Error completing program");
-    }
-  };
+    const handleComplete = async (id: number) => {
+        try {
+            const res = await fetch(`http://localhost:5000/programs/${id}/complete`, {
+                method: "PUT",
+            });
+            if (res.ok) {
+                toast.success("program marked as completed");
+                fetchPrograms();
+            } else {
+                toast.error("Failed to complete program");
+            }
+        } catch (err) {
+            console.error("Error completing program:", err);
+            toast.error("Error completing program");
+        }
+    };
 
 
 
@@ -206,11 +251,97 @@ const ManagePrograms = () => {
                             <CardTitle>{editingId ? "Edit Program" : "Create New Program"}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <Input placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
-                            <Textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                            <Input placeholder="Price" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-                            <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
-                            <Input placeholder="Duration (e.g. 4 weeks)" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300">Event Title</label>
+
+                                <Input placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-300 text-sm font-medium ">Description</label>
+
+                                <Textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                            </div>
+
+
+                            <div>
+                                <label className="block text-gray-300 text-sm font-medium ">Price</label>
+
+                                <Input placeholder="Price" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                            </div>
+
+
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="startDate" > Registrations From</Label>
+                                    <Input
+                                        placeholder="registration starting date"
+                                        type="date"
+                                        value={formData.startDate}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, startDate: e.target.value })
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="endDate"> To</Label>
+                                    <Input
+                                        placeholder="registration ending date"
+
+                                        type="date"
+                                        value={formData.endDate}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, endDate: e.target.value })
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+
+
+
+                            <div>
+                                <Label htmlFor="date"> Program Starts From</Label>
+
+                                <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                            </div>
+
+
+
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-300">Duration</label>
+
+                                <Input placeholder="Duration (e.g. 4 weeks)" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
+
+                            </div>
+
+
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-300">Location</label>
+
+                                <Input
+                                    placeholder="Location"
+                                    value={formData.location}
+                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                />
+                            </div>
+
+
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-300">Mail</label>
+
+                                <Input
+                                    placeholder="Your Mail"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+
+
+
 
                             <div className="flex gap-4">
                                 <label className="flex items-center gap-2">
@@ -227,18 +358,57 @@ const ManagePrograms = () => {
                                 </label>
                             </div>
 
-                            <Select onValueChange={(val) => setFormData({ ...formData, category: val })} value={formData.category}>
-                                <SelectTrigger className="bg-transparent border-white/20">
-                                    <SelectValue placeholder="Select Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {PROGRAM_CATEGORIES.map((cat) => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
 
-                            <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300">Attendees Limit*</label>
+
+                                <Input
+                                    type="number"
+                                    placeholder="Limit of Attendees"
+                                    value={formData.limit}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, limit: e.target.value })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300">Category</label>
+
+                                <Select onValueChange={(val) => setFormData({ ...formData, category: val })} value={formData.category}>
+                                    <SelectTrigger className="bg-transparent border-white/20">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {PROGRAM_CATEGORIES.map((cat) => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-300">Program Image </label>
+
+                                <Input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
+                            </div>
+
+                            <div>
+
+
+                                <Label className="block text-sm font-medium text-gray-300" htmlFor="qrCodeImage" style={{ marginTop: "20px" }}>QR Code Image</Label>
+                                <Input
+                                    className="bg-[#2e2e48] text-white border border-white/30 file:bg-mmk-purple file:text-white file:rounded file:border-0"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, qrCodeImage: e.target.files?.[0] || null })
+                                    }
+                                />
+                            </div>
+
                         </CardContent>
                         <CardFooter>
                             <Button onClick={handleSubmit} className="bg-mmk-purple hover:bg-mmk-purple/90 w-full">
@@ -272,6 +442,7 @@ const ManagePrograms = () => {
                                         <th className="px-4 py-2">Price</th>
                                         <th className="px-4 py-2">Category</th>
                                         <th className="px-4 py-2">Actions</th>
+                                        <th className="px-4 py-2">Export Excel</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -281,42 +452,55 @@ const ManagePrograms = () => {
                                             <td className="px-4 py-2">{program.date}</td>
                                             <td className="px-4 py-2">{program.isFree ? "Free" : `$${program.price}`}</td>
                                             <td className="px-4 py-2">{program.category}</td>
-                                             <td className="px-4 py-2">
-                        <div className="flex gap-2">
+                                            <td className="px-4 py-2">
+                                                <div className="flex gap-2">
 
 
-                          {program.completed ? (
+                                                    {program.completed ? (
 
-                            <Button disabled className="bg-blue-600 text-xs px-3 py-1 cursor-not-allowed">Edit</Button>
-                          ) : (
-                            <Button onClick={() => handleEdit(program)} className="bg-blue-600 text-xs px-3 py-1">Edit</Button>
-                          )}
-
-
-
-
-
-                          {program.completed ? (
-
-                            <Button disabled className="bg-red-600 text-xs px-3 py-1 cursor-not-allowed">Delete</Button>
-                          ) : (
-                          <Button onClick={() => handleDelete(program.id)} className="bg-red-600 text-xs px-3 py-1">Delete</Button>
-                          )}
+                                                        <Button disabled className="bg-blue-600 text-xs px-3 py-1 cursor-not-allowed">Edit</Button>
+                                                    ) : (
+                                                        <Button onClick={() => handleEdit(program)} className="bg-blue-600 text-xs px-3 py-1">Edit</Button>
+                                                    )}
 
 
 
 
-                          {program.completed ? (
 
-                            <Button disabled className="bg-green-500 text-xs px-3 py-1 cursor-not-allowed">Completed</Button>
-                          ) : (
-                            <Button onClick={() => handleComplete(program.id)} className="bg-green-600 text-xs px-3 py-1">Complete</Button>
-                          )}
+                                                    {program.completed ? (
+
+                                                        <Button disabled className="bg-red-600 text-xs px-3 py-1 cursor-not-allowed">Delete</Button>
+                                                    ) : (
+                                                        <Button onClick={() => handleDelete(program.id)} className="bg-red-600 text-xs px-3 py-1">Delete</Button>
+                                                    )}
 
 
 
-                        </div>
-                      </td>
+
+                                                    {program.completed ? (
+
+                                                        <Button disabled className="bg-green-500 text-xs px-3 py-1 cursor-not-allowed">Completed</Button>
+                                                    ) : (
+                                                        <Button onClick={() => handleComplete(program.id)} className="bg-green-600 text-xs px-3 py-1">Complete</Button>
+                                                    )}
+
+
+
+                                                </div>
+                                            </td>
+
+
+                                            <td className="px-4 py-2">
+                                                <Button
+                                                    className="bg-yellow-500 text-xs px-3 py-1"
+                                                    onClick={() => window.open(`http://localhost:5000/programs/${program.id}/export-excel`, "_blank")}
+                                                >
+                                                    Export Excel
+                                                </Button>
+
+
+                                            </td>
+
                                         </tr>
                                     ))}
                                 </tbody>
@@ -326,10 +510,15 @@ const ManagePrograms = () => {
                         <div className="flex justify-end gap-2 mt-4">
                             <Button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} className="bg-gray-600 px-3 py-1">Prev</Button>
                             <span className="self-center text-sm">Page {currentPage} of {totalPages}</span>
-                            <Button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)} className="bg-gray-600 px-3 py-1">Next</Button>
+                            <Button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)} className="bg-gray-600 px-3 py-1">Next
+
+                            </Button>
                         </div>
                     </div>
                 </div>
+
+
+
             </main>
         </div>
     );

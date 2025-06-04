@@ -20,7 +20,11 @@ const JoinProgramPaymentForm = () => {
     programId: "",
     programName: "",
     transactionId: "",
+      programPrice: "",
   });
+
+    const [qrImageUrl, setQrImageUrl] = useState("");
+  
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("MMK_U_user_id") || "";
@@ -37,14 +41,35 @@ const JoinProgramPaymentForm = () => {
       programId: storedProgramtId,
       programName: storedProgramName,
     }));
+
+   if (storedProgramtId) {
+      const id = storedProgramtId;
+      fetch(`http://localhost:5000/programs/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data)
+          if (data.qrcode) {
+            setQrImageUrl(`http://localhost:5000/uploads/${data.qrcode}`);
+          }
+          setFormData((prev) => ({
+            ...prev,
+            programPrice: data.price || "", // fallback in case it's null
+          }));
+
+        })
+        .catch((err) => {
+          console.error("Failed to fetch event QR code:", err);
+          toast.error("Unable to load event QR code");
+        });
+    }
+
+
+
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-
-
 
 
 
@@ -156,13 +181,29 @@ const JoinProgramPaymentForm = () => {
               />
             </div>
 
-            <div className="text-center mt-4">
+            {/* <div className="text-center mt-4">
               <img
                 src="/src/pages/QR-AbhiramKosuru.jpg"
                 alt="QR Code"
                 className="w-60 h-60 mx-auto rounded-lg border border-white/20 shadow-lg"
               />
               <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
+            </div> */}
+
+            <div className="text-center mt-4">
+              {qrImageUrl ? (
+                <img
+                  src={qrImageUrl}
+                  alt="Event QR Code"
+                  className="w-60 h-60 mx-auto rounded-lg border border-white/20 shadow-lg"
+                />
+              ) : (
+                <p className="text-center text-white/80">QR code loading...</p>
+              )}
+
+              <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
+              <strong className=" text-white/80 mt-2">Price: {formData.programPrice}</strong>
+
             </div>
 
 

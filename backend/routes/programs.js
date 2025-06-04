@@ -1,10 +1,10 @@
 // programs.js
 const express = require("express");
 const router = express.Router();
-const db = require("../db"); 
+const db = require("../db");
 const multer = require("multer");
 const path = require("path");
-
+const ExcelJS = require('exceljs');
 
 // Multer setup
 const storage = multer.diskStorage({
@@ -24,6 +24,8 @@ const formatDate = (inputDate) => {
   return `${year}-${month}-${day}`;
 };
 
+
+
 // GET all programs
 router.get("/", async (req, res) => {
   try {
@@ -42,52 +44,129 @@ router.get("/", async (req, res) => {
 
 
 
-// POST new program
-router.post("/", upload.single("image"), async (req, res) => {
+
+
+// Get all *non-completed* programs
+router.get("/non-complete", async (req, res) => {
   try {
-        console.log("Request body:", req.body);
-    console.log("File:", req.file);
+    const [rows] = await db.query("SELECT * FROM programs WHERE completed = FALSE");
 
-  const {
-    title,
-    description,
-    price,
-    isFree,
-    isCertified,
-    isLive,
-    duration,
-    date,
-    category
-  } = req.body;
+    rows.forEach(event => {
+      if (event.image) {
+        event.image = `http://localhost:5000/uploads/${event.image}`;
+      }
+    });
 
-    const image = req.file ? req.file.filename : null;
-
-await db.query(`
-  INSERT INTO programs 
-  (title, description, price, isFree, isCertified, isLive, duration, date, category, image)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`,
-[
-  title,
-  description,
-  price,
-  isFree === "true" ? 1 : 0,
-  isCertified === "true" ? 1 : 0,
-  isLive === "true" ? 1 : 0,
-  duration,
-  date,
-  category,
-  image,
-]
-);
-
-
-    res.status(201).json({ message: "Event created" });
+    res.json(rows);
   } catch (err) {
-     console.error("Error in POST /programs:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
+
+//Get Specifi Program
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query("SELECT * FROM programs WHERE id = ?", [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Program not found" });
+    }
+
+    res.json(rows[0]); // return single event object
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+
+
+//POST a new program
+router.post("/",
+  //  upload.single("image"),
+
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "qrcode", maxCount: 1 },
+  ]),
+
+  async (req, res) => {
+    try {
+      console.log("Request body:", req.body);
+      console.log("File:", req.file);
+ 
+      const {
+        title,
+        description,
+        price,
+        isFree,
+        isCertified,
+        isLive,
+        duration,
+        date,
+        startDate,
+        endDate,
+        category,
+        limit,
+        location,
+        email
+      } = req.body;
+
+       // 🔥 Correct usage for multiple fields
+      const imageFile = req.files?.image?.[0];
+      const qrcodeFile = req.files?.qrcode?.[0];
+
+      const image = imageFile ? imageFile.filename : null;
+      const qrcode = qrcodeFile ? qrcodeFile.filename : null;
+
+      
+      const formattedDate = formatDate(date);
+      const formattedStartDate = formatDate(startDate);
+      const formattedEndDate = formatDate(endDate);
+      const attendeeLimit = limit ? parseInt(limit, 10) : null;
+
+
+      await db.query(
+        `
+      INSERT INTO programs 
+      (title, description, price, start_date, end_date, isFree, isCertified, isLive, duration, date, category, image, attendance_limit, location, qrcode, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+        [
+          title,
+          description,
+          price,
+          formattedStartDate,                    // start_date
+          formattedEndDate,                      // end_date
+          isFree === "true" ? 1 : 0,            // isFree
+          isCertified === "true" ? 1 : 0,       // isCertified
+          isLive === "true" ? 1 : 0,            // isLive
+          duration,
+          formattedDate,
+          category,
+          image,
+          attendeeLimit,
+          location,
+          qrcode,
+          email
+        ]
+      );
+
+      res.status(201).json({ message: "Event created" });
+    } catch (err) {
+      console.error("Error in POST /programs:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+
 
 
 // In routes/events.js or a new route file
@@ -122,64 +201,259 @@ router.get("/check-attendance", async (req, res) => {
 
 
 
-// PUT - Update a program
-router.put("/:id", upload.single("image"), async (req, res) => {
-  const { id } = req.params;
-  const {
-    title,
-    description,
-    price,
-    isFree,
-    isCertified,
-    isLive,
-    duration,
-    date,
-    category,
-  } = req.body;
+ // PUT - Update a program
+// router.put("/:id",
+//   // upload.single("image"),
+//   upload.fields([
+//     { name: "image", maxCount: 1 },
+//     { name: "qrcode", maxCount: 1 },
+//   ]),
+//   async (req, res) => {
+//     const { id } = req.params;
+//     const {
+//       title,
+//       description,
+//       price,
+//       isFree,
+//       isCertified,
+//       isLive,
+//       duration,
+//       date,
+//       startDate,
+//       endDate,
+//       category,
+//       limit,
+//       location,
+//       email
+//     } = req.body;
 
-  const image = req.file ? req.file.filename : null;
-    const formattedDate = formatDate(date);
-  try {
-    // Build query dynamically depending on whether image is updated
-    const fields = [
-      "title = ?",
-      "description = ?",
-      "price = ?",
-      "isFree = ?",
-      "isCertified = ?",
-      "isLive = ?",
-      "duration = ?",
-      "date = ?",
-      "category = ?"
-    ];
-    const values = [
+//     // const image = req.file ? req.file.filename : null;
+//     //       const qrcodeFile = req.files?.qrcode?.[0];
+//     const imageFile = req.files?.image?.[0];
+//     const qrcodeFile = req.files?.qrcode?.[0];
+
+//     const image = imageFile ? imageFile.filename : null;
+//     const qrcode = qrcodeFile ? qrcodeFile.filename : null;
+
+//     const formattedDate = formatDate(date);
+//     const formattedStartDate = formatDate(startDate);
+//     const formattedEndDate = formatDate(endDate);
+
+// // "isCertified = ?",
+// //         "isLive = ?",
+// //         "duration = ?",
+       
+
+//     try {
+//       // Build query dynamically depending on whether image is updated
+//       const fields = [
+//         "title = ?",
+//         "description = ?",
+//         "price = ?",
+//         "isFree = ?",
+//          "date = ?",
+//          "duration = ?",
+//         "start_date = ?",
+//         "end_date = ?",
+//         "category = ?",
+//         "attendance_limit = ?",
+//         "location = ?",
+//         "email = ?" 
+
+//       ];
+
+//       const values = [
+//         title,
+//         description,
+//         price,
+//         // isFree === "true" || isFree === true ? 1 : 0,
+//         // isCertified === "true" || isCertified === true ? 1 : 0,
+//         // isLive === "true" || isLive === true ? 1 : 0, duration,
+//         duration,
+//         formattedDate,
+//         formattedStartDate,
+//         formattedEndDate,
+//         category,
+//         limit || 0,
+//         location,
+//         email
+//       ];
+
+//          if (isFree !== undefined) {
+//         fields.push("isFree = ?");
+//         values.push(isFree === "true" || isFree === true ? 1 : 0);
+//       }
+
+//       if (isCertified !== undefined) {
+//         fields.push("isCertified = ?");
+//         values.push(isCertified === "true" || isCertified === true ? 1 : 0);
+//       }
+
+//       if (isLive !== undefined) {
+//         fields.push("isLive = ?");
+//         values.push(isLive === "true" || isLive === true ? 1 : 0);
+//       }
+
+//       if (image) {
+//         fields.push("image = ?");
+//         values.push(image);
+//       }
+//       if (qrcode) {
+//         fields.push("qrcode = ?");
+//         values.push(qrcode);
+//       }
+
+
+//       values.push(id); // for WHERE clause
+
+//       const query = `UPDATE programs SET ${fields.join(", ")} WHERE id = ?`;
+//       await db.query(query, values);
+
+//       res.json({ message: "Program updated successfully" });
+//     } catch (err) {
+//       console.error("Error updating program:", err);
+//       res.status(500).json({ error: "Failed to update program" });
+//     }
+//   });
+
+router.put("/:id",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "qrcode", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const { id } = req.params;
+    const {
       title,
       description,
       price,
-      isFree === "true" ? 1 : 0,
-      isCertified === "true" ? 1 : 0,
-      isLive === "true" ? 1 : 0,
+      isFree,
+      isCertified,
+      isLive,
       duration,
-      formattedDate,
-      category
-    ];
+      date,
+      startDate,
+      endDate,
+      category,
+      limit,
+      location,
+      email
+    } = req.body;
 
-    if (image) {
-      fields.push("image = ?");
-      values.push(image);
+    const imageFile = req.files?.image?.[0];
+    const qrcodeFile = req.files?.qrcode?.[0];
+
+    const image = imageFile ? imageFile.filename : null;
+    const qrcode = qrcodeFile ? qrcodeFile.filename : null;
+
+    const formattedDate = date ? formatDate(date) : null;
+    const formattedStartDate = startDate ? formatDate(startDate) : null;
+    const formattedEndDate = endDate ? formatDate(endDate) : null;
+
+    try {
+      const fields = [];
+      const values = [];
+
+      if (title !== undefined) {
+        fields.push("title = ?");
+        values.push(title);
+      }
+
+      if (description !== undefined) {
+        fields.push("description = ?");
+        values.push(description);
+      }
+
+      if (price !== undefined) {
+        fields.push("price = ?");
+        values.push(price);
+      }
+
+      if (isFree !== undefined) {
+        fields.push("isFree = ?");
+        values.push(isFree === "true" || isFree === true ? 1 : 0);
+      }
+
+      if (isCertified !== undefined) {
+        fields.push("isCertified = ?");
+        values.push(isCertified === "true" || isCertified === true ? 1 : 0);
+      }
+
+      if (isLive !== undefined) {
+        fields.push("isLive = ?");
+        values.push(isLive === "true" || isLive === true ? 1 : 0);
+      }
+
+      if (duration !== undefined) {
+        fields.push("duration = ?");
+        values.push(duration);
+      }
+
+      if (formattedDate !== null) {
+        fields.push("date = ?");
+        values.push(formattedDate);
+      }
+
+      if (formattedStartDate !== null) {
+        fields.push("start_date = ?");
+        values.push(formattedStartDate);
+      }
+
+      if (formattedEndDate !== null) {
+        fields.push("end_date = ?");
+        values.push(formattedEndDate);
+      }
+
+      if (category !== undefined) {
+        fields.push("category = ?");
+        values.push(category);
+      }
+
+      if (limit !== undefined) {
+        fields.push("attendance_limit = ?");
+        values.push(limit);
+      }
+
+      if (location !== undefined) {
+        fields.push("location = ?");
+        values.push(location);
+      }
+
+      if (email !== undefined) {
+        fields.push("email = ?");
+        values.push(email);
+      }
+
+      if (image) {
+        fields.push("image = ?");
+        values.push(image);
+      }
+
+      if (qrcode) {
+        fields.push("qrcode = ?");
+        values.push(qrcode);
+      }
+
+      if (fields.length === 0) {
+        return res.status(400).json({ error: "No fields to update" });
+      }
+
+      values.push(id);
+
+      const query = `UPDATE programs SET ${fields.join(", ")} WHERE id = ?`;
+      await db.query(query, values);
+
+      res.json({ message: "Program updated successfully" });
+    } catch (err) {
+      console.error("Error updating program:", err);
+      res.status(500).json({ error: "Failed to update program" });
     }
-
-    values.push(id); // for WHERE clause
-
-    const query = `UPDATE programs SET ${fields.join(", ")} WHERE id = ?`;
-    await db.query(query, values);
-
-    res.json({ message: "Program updated successfully" });
-  } catch (err) {
-    console.error("Error updating program:", err);
-    res.status(500).json({ error: "Failed to update program" });
   }
-});
+);
+
+
+
+
 
 
 
@@ -258,7 +532,7 @@ router.get('/user-programs/:userId', async (req, res) => {
     res.json(events);
   } catch (err) {
     console.error("Error in GET /user-programs/:userId:", err);
-    res.status(500).json({ error: "Failed to fetch user events." });
+    res.status(500).json({ error: "Failed to fetch user programs." });
   }
 });
 
@@ -271,10 +545,67 @@ router.put("/:id/complete", async (req, res) => {
 
   try {
     await db.query("UPDATE programs SET completed = TRUE WHERE id = ?", [id]);
-    res.json({ message: "Event marked as completed" });
+    res.json({ message: "Program marked as completed" });
   } catch (err) {
-    console.error("Error completing event:", err);
-    res.status(500).json({ error: "Failed to complete event" });
+    console.error("Error completing program:", err);
+    res.status(500).json({ error: "Failed to complete program" });
+  }
+});
+
+
+
+
+router.get('/:programId/export-excel', async (req, res) => {
+  const { programId } = req.params;
+
+  try {
+    const [attendees] = await db.query(`
+      SELECT 
+        p.id AS program_id,
+        p.title AS program_name,
+        u.user_id AS user_id,
+        u.name AS user_name,
+        u.email AS user_email
+      FROM program_attendees pa
+      JOIN users u ON pa.user_id = u.user_id
+      JOIN programs p ON pa.program_id = p.id
+      WHERE pa.program_id = ?
+    `, [programId]);
+
+    if (!attendees.length) {
+      return res.status(404).json({ error: "No attendees found" });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Attendees");
+
+    worksheet.columns = [
+      { header: "Program ID", key: "program_id", width: 10 },
+      { header: "Program Name", key: "program_name", width: 30 },
+      { header: "User ID", key: "user_id", width: 10 },
+      { header: "User Name", key: "user_name", width: 25 },
+      { header: "User Email", key: "user_email", width: 30 },
+    ];
+
+    // Add rows
+    attendees.forEach(row => worksheet.addRow(row));
+
+    // Set headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=program_${programId}_attendees.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (err) {
+    console.error("Error exporting Excel:", err);
+    res.status(500).json({ error: "Failed to export Excel file." });
   }
 });
 

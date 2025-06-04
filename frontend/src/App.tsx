@@ -32,6 +32,8 @@ import ProtectedRoute from "./components/ProtectedRoute"; // Make sure path is c
 import UserProtectedRoute from "./components/UserProtectedRoute"; // 👈 Add this import
 import JoinProgramPaymentForm from "./pages/JoinProgramPaymentForm";
 import ManageProgramPayments from "./pages/admin/manage-program-payments";
+import GuestJoinPaymentForm from "./pages/GuestJoinPaymentForm";
+import GuestProgramJoinPaymentForm from "./pages/GuestProgramJoinPaymentForm";
 
 
 const queryClient = new QueryClient();
@@ -101,8 +103,10 @@ const App = () => (
 
           <Route path="/forum" element={<ForumBlogs />} />
 
+           
+          <Route path="/guest-join-payment" element={<GuestJoinPaymentForm />} />
 
-
+          <Route path="/guest-program-join-payment" element={<GuestProgramJoinPaymentForm />} />
 
           <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFound />} />
