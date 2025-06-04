@@ -55,7 +55,7 @@ router.get("/", async (req, res) => {
 router.get("/non-complete", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE");
-    
+
     rows.forEach(event => {
       if (event.image) {
         event.image = `http://localhost:5000/uploads/${event.image}`;
@@ -64,9 +64,9 @@ router.get("/non-complete", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-     console.error("DB Error:", err); // 👈 log the error
-  
-    res.status(500).json({ error: err.message+ "ha" });
+    console.error("DB Error:", err); // 👈 log the error
+
+    res.status(500).json({ error: err.message + "ha" });
   }
 });
 
@@ -98,41 +98,41 @@ router.post("/",
     { name: "qrcode", maxCount: 1 },
   ]),
 
-async (req, res) => {
-  try {
-    console.log("Request body:", req.body);
-    console.log("File:", req.file);
-    const {
-      title, description, date, startDate,endDate,time, location, price, organizer,category, limit, email
-      
-    } = req.body;
+  async (req, res) => {
+    try {
+      console.log("Request body:", req.body);
+      console.log("File:", req.file);
+      const {
+        title, description, date, startDate, endDate, time, location, price, organizer, category, limit, email
 
-    const image = req.file ? req.file.filename : null;
-    const qrcode = req.files.qrcode ? req.files.qrcode[0].filename : null;
+      } = req.body;
 
-const formattedDate = formatDate(date); // replace 'date' from req.body
- const formattedStartDate = startDate ? formatDate(startDate) : null;
+      const image = req.file ? req.file.filename : null;
+      const qrcode = req.files.qrcode ? req.files.qrcode[0].filename : null;
 
- const formattedEndDate = endDate ? formatDate(endDate) : null;
-    const attendeeLimit = limit ? parseInt(limit, 10) : null;
+      const formattedDate = formatDate(date); // replace 'date' from req.body
+      const formattedStartDate = startDate ? formatDate(startDate) : null;
+
+      const formattedEndDate = endDate ? formatDate(endDate) : null;
+      const attendeeLimit = limit ? parseInt(limit, 10) : null;
 
 
-    
-await db.query(
-  `INSERT INTO events (title, description, date,start_date,end_date, time, location, price, organizer, category, image, attendance_limit, qrcode, email)
+
+      await db.query(
+        `INSERT INTO events (title, description, date,start_date,end_date, time, location, price, organizer, category, image, attendance_limit, qrcode, email)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?)`,
-  [title, description, formattedDate,  formattedStartDate,
-        formattedEndDate,time, location, price, organizer, category, image, attendeeLimit,qrcode, email]
-);
+        [title, description, formattedDate, formattedStartDate,
+          formattedEndDate, time, location, price, organizer, category, image, attendeeLimit, qrcode, email]
+      );
 
 
 
-    res.status(201).json({ message: "Event created" });
-  } catch (err) {
-     console.error("Error in POST /events:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      res.status(201).json({ message: "Event created" });
+    } catch (err) {
+      console.error("Error in POST /events:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 
 
@@ -142,49 +142,49 @@ await db.query(
 //User Create Event
 router.post("/user-create-event",
   //  upload.single("image"), 
-     upload.fields([
+  upload.fields([
     { name: "image", maxCount: 1 },
     { name: "qrcode", maxCount: 1 },
   ]),
-   async (req, res) => {
-  try {
-    const {
-      title, description, date, startDate, endDate, time,
-      location, price, organizer, category, limit,
-      user_id, user_name, email // 🔥 Passed from frontend
-    } = req.body;
+  async (req, res) => {
+    try {
+      const {
+        title, description, date, startDate, endDate, time,
+        location, price, organizer, category, limit,
+        user_id, user_name, email // 🔥 Passed from frontend
+      } = req.body;
 
-    const image = req.file ? req.file.filename : null;
+      const image = req.file ? req.file.filename : null;
       const qrcode = req.files["qrcode"]
         ? req.files["qrcode"][0].filename
         : null;
 
-    const formattedDate = formatDate(date);
-    const formattedStartDate = startDate ? formatDate(startDate) : null;
-    const formattedEndDate = endDate ? formatDate(endDate) : null;
-    const attendeeLimit = limit ? parseInt(limit, 10) : null;
+      const formattedDate = formatDate(date);
+      const formattedStartDate = startDate ? formatDate(startDate) : null;
+      const formattedEndDate = endDate ? formatDate(endDate) : null;
+      const attendeeLimit = limit ? parseInt(limit, 10) : null;
 
-    // 🔹 First insert the event
-    const [eventResult] = await db.query(
-      `INSERT INTO events (title, description, date, start_date, end_date, time, location, price, organizer, category, image, attendance_limit, qrcode, email)
+      // 🔹 First insert the event
+      const [eventResult] = await db.query(
+        `INSERT INTO events (title, description, date, start_date, end_date, time, location, price, organizer, category, image, attendance_limit, qrcode, email)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, formattedDate, formattedStartDate, formattedEndDate, time, location, price, organizer, category, image, attendeeLimit, qrcode, email]
-    );
+        [title, description, formattedDate, formattedStartDate, formattedEndDate, time, location, price, organizer, category, image, attendeeLimit, qrcode, email]
+      );
 
-    const event_id = eventResult.insertId; // 🔥 Get the inserted event ID
+      const event_id = eventResult.insertId; // 🔥 Get the inserted event ID
 
-    // 🔹 Then insert into user_created_events
-   await db.query(
-  `INSERT INTO user_created_events (user_id, user_name, email, event_id, event_name)
+      // 🔹 Then insert into user_created_events
+      await db.query(
+        `INSERT INTO user_created_events (user_id, user_name, email, event_id, event_name)
    VALUES (?, ?, ?, ?, ?)`,
-  [user_id, user_name, email, event_id, title]
-);
-    res.status(201).json({ message: "Event and user info saved" });
-  } catch (err) {
-    console.error("Error in POST /events:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+        [user_id, user_name, email, event_id, title]
+      );
+      res.status(201).json({ message: "Event and user info saved" });
+    } catch (err) {
+      console.error("Error in POST /events:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 
 
@@ -202,7 +202,7 @@ router.get("/check-attendance", async (req, res) => {
     const [rows] = await db.query(
       "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
       [userId, eventId]
-    ); 
+    );
 
     if (rows.length > 0) {
       res.json({ alreadyJoined: true });
@@ -223,54 +223,54 @@ router.get("/check-attendance", async (req, res) => {
 
 
 // Update event
-router.put("/:id", 
+router.put("/:id",
   // upload.single("image"),
-       upload.fields([
+  upload.fields([
     { name: "image", maxCount: 1 },
     { name: "qrcode", maxCount: 1 },
   ]),
-   async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, description, date, startDate,endDate,time, location, price, organizer, category,limit,email } = req.body;
-     
-    // Safely extract uploaded files
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, date, startDate, endDate, time, location, price, organizer, category, limit, email } = req.body;
+
+      // Safely extract uploaded files
       const imageFile = req.files?.image?.[0];
       const qrcodeFile = req.files?.qrcode?.[0];
 
       const image = imageFile ? imageFile.filename : null;
       const qrcode = qrcodeFile ? qrcodeFile.filename : null;
-    
-    const formattedDate = formatDate(date);
+
+      const formattedDate = formatDate(date);
       const formattedStartDate = formatDate(startDate);
-    const formattedEndDate = formatDate(endDate);
+      const formattedEndDate = formatDate(endDate);
 
-    let query = `UPDATE events SET title = ?, description = ?, date = ?,  start_date = ?,   end_date = ?,  time = ?, location = ?, price=?, organizer = ?, category = ? ,  attendance_limit = ?, email = ?`;
-        const params = [title, description, formattedDate, formattedStartDate, formattedEndDate,time, location, price, organizer, category,limit, email];
+      let query = `UPDATE events SET title = ?, description = ?, date = ?,  start_date = ?,   end_date = ?,  time = ?, location = ?, price=?, organizer = ?, category = ? ,  attendance_limit = ?, email = ?`;
+      const params = [title, description, formattedDate, formattedStartDate, formattedEndDate, time, location, price, organizer, category, limit, email];
 
-    if (image) {
-      query += `, image = ?`;
-      params.push(image);
-    }
+      if (image) {
+        query += `, image = ?`;
+        params.push(image);
+      }
 
-          // Add qrcode if present
+      // Add qrcode if present
       if (qrcode) {
         query += `, qrcode = ?`;
         params.push(qrcode);
       }
 
 
-    query += ` WHERE id = ?`;
-    params.push(id);
+      query += ` WHERE id = ?`;
+      params.push(id);
 
-    await db.query(query, params);
+      await db.query(query, params);
 
-    res.json({ message: "Event updated" });
-  } catch (err) {
-    console.error("Error in PUT /events/:id:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      res.json({ message: "Event updated" });
+    } catch (err) {
+      console.error("Error in PUT /events/:id:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 
 // Delete event
@@ -315,7 +315,7 @@ router.get('/users/:userId', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT id, user_id, name, email, phone FROM users WHERE user_id = ?`, 
+      `SELECT id, user_id, name, email, phone FROM users WHERE user_id = ?`,
       [userId]
     );
     if (rows.length === 0) {
@@ -422,6 +422,33 @@ router.get("/hosted/:userId", async (req, res) => {
 });
 
 
+// GET attendees for an event
+router.get("/:eventId/attendees", async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+         ea.user_id,
+         ea.guest_email,
+         u.name AS user_name,
+         ea.guest_name,
+         ea.participated
+       FROM event_attendees ea
+       LEFT JOIN users u ON ea.user_id = u.user_id
+       WHERE ea.event_id = ?`,
+      [eventId]
+    );
+
+    res.json({ attendees: rows });
+  } catch (err) {
+    console.error("❌ Error fetching attendees:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
 // 🚀 New API route to send certificates
 router.post("/send-certificates/:eventId", async (req, res) => {
   const { eventId } = req.params;
@@ -464,66 +491,88 @@ router.post("/send-certificates/:eventId", async (req, res) => {
 });
 
 
-// GET attendees for an event
-router.get("/:eventId/attendees", async (req, res) => {
-  const { eventId } = req.params;
 
-  try {
-    const [rows] = await db.query(
-      `SELECT 
-         ea.user_id,
-         ea.guest_email,
-         u.name AS user_name,
-         ea.guest_name,
-         ea.participated
-       FROM event_attendees ea
-       LEFT JOIN users u ON ea.user_id = u.id
-       WHERE ea.event_id = ?`,
-      [eventId]
-    );
-
-    res.json({ attendees: rows });
-  } catch (err) {
-    console.error("❌ Error fetching attendees:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-
-//Mark user as participated
 router.put("/:eventId/mark-participation", async (req, res) => {
   const { userId, guestEmail } = req.body;
   const eventId = req.params.eventId;
 
-  if (!eventId || (!userId && !guestEmail)) {
-    return res.status(400).json({ error: "Missing userId or guestEmail, or eventId" });
-  }
+
 
   try {
     let result;
 
     if (guestEmail) {
+      // Mark participation by guest email
       [result] = await db.query(
         "UPDATE event_attendees SET participated = TRUE WHERE event_id = ? AND guest_email = ? AND participated = FALSE",
         [eventId, guestEmail]
       );
-    } else {
+    } else if (userId) {
+      // Mark participation by user ID
       [result] = await db.query(
         "UPDATE event_attendees SET participated = TRUE WHERE event_id = ? AND user_id = ? AND participated = FALSE",
         [eventId, userId]
       );
+    } else {
+      return res.status(400).json({ error: "Either userId or guestEmail must be provided" });
     }
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Already marked or not found" });
+      return res.status(404).json({ error: "No matching attendee found or already marked participated" });
     }
 
-    res.json({ message: "Participation marked successfully" });
+    return res.json({ message: "Participation marked successfully" });
   } catch (err) {
     console.error("❌ Error marking participation:", err);
-    res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 });
+
+
+//Mark user as participated
+// router.put("/:eventId/mark-participation", async (req, res) => {
+//   const { userId, guestEmail } = req.body;
+//   const eventId = req.params.eventId;
+
+//   console.log("➡️ EventID:", eventId);
+//   console.log("➡️ userId:", userId);
+//   console.log("➡️ guestEmail:", guestEmail);
+
+
+
+//   try {
+//     let result;
+
+// if (guestEmail) {
+//   [result] = await db.query(
+//     "UPDATE event_attendees SET participated = TRUE WHERE event_id = ? AND guest_email = ? AND participated = FALSE",
+//     [eventId, guestEmail]
+//   );
+// }
+//     else if (userId) {
+// [result] = await db.query(
+//   "UPDATE event_attendees SET participated = TRUE WHERE event_id = ? AND user_id = ? AND participated = FALSE",
+//   [eventId, userId]
+// );
+//     }
+
+//     else {
+//       return res.status(404).json({ message: "error" });
+
+//     }
+
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ message: "Already marked or not found" });
+//     }
+
+//     res.json({ message: "Participation marked successfully" });
+//   } catch (err) {
+//     console.error("❌ Error marking participation:", err);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
+
+
 
 
 

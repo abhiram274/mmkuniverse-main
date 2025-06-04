@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Dashboard from "../Dashboard";
 import { useNavigate } from "react-router-dom";
 import { Label } from "@radix-ui/react-label";
+import AttendeesModal from "@/components/AttendeesModal";
 
 const PROGRAM_CATEGORIES = [
     "Tech",
@@ -70,6 +71,12 @@ const ManagePrograms = () => {
         email: "",
     });
 
+
+    const [attendees, setAttendees] = useState([]);
+    const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
+    const [showModal, setShowModal] = useState(false);
+    const [sendingType, setSendingType] = useState<null | 'joined' | 'participated'>(null);
+
     const [editingId, setEditingId] = useState<number | null>(null);
     const [filterCategory, setFilterCategory] = useState<string>("all");
     const [currentPage, setCurrentPage] = useState(1);
@@ -83,6 +90,52 @@ const ManagePrograms = () => {
         const localDate = new Date(date.getTime() - tzOffsetInMs);
         return localDate.toISOString().split("T")[0];
     };
+
+
+    //Fetch attendees
+    const fetchAttendees = async (programId: number) => {
+        try {
+            const res = await fetch(`http://localhost:5000/programs/${programId}/attendees`);
+            const data = await res.json();
+            console.log("Fetched attendees:", data);
+            //  setAttendeesForEvent(data.attendees);
+            setAttendees(data.attendees || []);
+            setSelectedProgramId(programId);
+            //setAttendees(data.attendees);
+            setShowModal(true);
+        } catch (err) {
+            toast.error("Failed to fetch attendees");
+        }
+    };
+
+
+    //Mark as participated
+
+    const markAsParticipated = async (programId: number, userId: string | null, guestEmail: string | null) => {
+        try {
+            const res = await fetch(`http://localhost:5000/programs/${programId}/mark-participation`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ userId, guestEmail })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success("Marked as participated");
+                fetchAttendees(programId); // Refresh list
+            } else {
+                toast.error(data.error || "Failed to mark participation");
+            }
+        } catch (err) {
+            toast.error("Failed to mark participation");
+        }
+    };
+
+
+
 
 
 
@@ -442,7 +495,11 @@ const ManagePrograms = () => {
                                         <th className="px-4 py-2">Price</th>
                                         <th className="px-4 py-2">Category</th>
                                         <th className="px-4 py-2">Actions</th>
+                                        <th className="px-4 py-2">View Attendees</th>
                                         <th className="px-4 py-2">Export Excel</th>
+                                        <th className="px-4 py-2">Send Certificate</th>
+                                        <th className="px-4 py-2">Send Certficate</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -489,6 +546,21 @@ const ManagePrograms = () => {
                                                 </div>
                                             </td>
 
+                                            <td className="px-4 py-2">
+
+
+                                                <Button className="bg-gray-700 text-xs px-3 py-1" onClick={() => fetchAttendees(program.id)}>View Attendees</Button>
+                                                {showModal && (
+                                                    <AttendeesModal
+                                                        attendees={attendees}
+                                                        onClose={() => setShowModal(false)}
+                                                        onMarkParticipated={(userId, guestEmail) =>
+                                                            markAsParticipated(selectedProgramId, userId, guestEmail)
+                                                        }
+                                                    />
+                                                )}
+                                
+                                            </td>
 
                                             <td className="px-4 py-2">
                                                 <Button
@@ -500,6 +572,51 @@ const ManagePrograms = () => {
 
 
                                             </td>
+
+
+
+  <td className="px-4 py-2">
+                          <Button
+                            className="bg-purple-700 text-xs px-3 py-1"
+                            disabled={sendingType === 'joined'}
+                            onClick={() => {
+                              setSendingType('joined');
+                              fetch(`http://localhost:5000/programs/send-certificates/${program.id}?type=joined`, {
+                                method: "POST",
+                              })
+                                .then((res) => res.json())
+                                .then((data) => toast.success(data.message))
+                                .catch(() => toast.error("Failed to send certificates"))
+                                .finally(() => setSendingType(null));
+                            }}
+                          >
+                            {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
+                          </Button>
+                        </td>
+
+                        <td className="px-4 py-2">
+                          <Button
+                            className="bg-indigo-700 text-xs px-3 py-1"
+                            disabled={sendingType === 'participated'}
+                            onClick={() => {
+                              setSendingType('participated');
+                              fetch(`http://localhost:5000/programs/send-certificates/${program.id}?type=participated`, {
+                                method: "POST",
+                              })
+                                .then((res) => res.json())
+                                .then((data) => toast.success(data.message))
+                                .catch(() => toast.error("Failed to send certificates"))
+                                .finally(() => setSendingType(null));
+                            }}
+                          >
+                            {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
+                          </Button>
+                        </td>
+
+
+
+
+
 
                                         </tr>
                                     ))}

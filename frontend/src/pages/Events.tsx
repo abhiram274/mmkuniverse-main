@@ -166,8 +166,7 @@ const Events = () => {
     }
 
     const userId = storedId; // keep as string "MMK_U_1234"
-    const userName = storedUserName;
-    const userEmail = storedUserEmail;
+
 
     try {
       const res = await fetch(

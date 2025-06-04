@@ -34,10 +34,10 @@ const upload = multer({
 
 // verify-payment
 router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, res) => {
-  const { userId, transactionId } = req.body;
+  const { userId, name, email, transactionId } = req.body;
   const eventId = req.params.id;
   const paymentImage = req.file;
-
+  
   if (!userId || !transactionId || !eventId || !paymentImage) {
     return res.status(400).json({ error: "Missing required fields" });
   }
@@ -50,8 +50,8 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
   try {
     // Check if this user has already requested
     const [existingRequest] = await db.query(
-      "SELECT * FROM event_payment_requests WHERE user_id = ? AND event_id = ? AND status = 'pending'",
-      [userId, eventId]
+      "SELECT * FROM event_payment_requests WHERE user_id = ? AND user_name=? AND user_mail =? AND event_id = ? AND status = 'pending'",
+      [userId, name, email,eventId]
     );
 
     if (existingRequest.length > 0) {
@@ -60,8 +60,8 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
 
     // Insert into payment request table
     await db.query(
-      "INSERT INTO event_payment_requests (user_id, event_id, transaction_id, payment_image_path,status) VALUES (?, ?, ?, ?,'pending')",
-      [userId, eventId, transactionId, paymentImage.filename]
+      "INSERT INTO event_payment_requests (user_id,user_name, user_mail, event_id, transaction_id, payment_image_path,status) VALUES (?, ?, ?, ?, ?, ?,'pending')",
+      [userId, name, email, eventId, transactionId, paymentImage.filename]
     );
 
     res.status(200).json({ message: "Request submitted. Awaiting admin approval." });
@@ -156,6 +156,8 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
 
     const {
       user_id,
+      user_name,
+      user_mail,
       event_id,
       transaction_id,
       payment_image_path,
@@ -171,7 +173,8 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
         "SELECT * FROM event_attendees WHERE guest_email = ? AND event_id = ?",
         [guest_email, event_id]
       );
-    } else {
+    } 
+    else {
       [existing] = await db.query(
         "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
         [user_id, event_id]
@@ -191,11 +194,12 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
          VALUES (?, ?, ?, ?)`,
         [event_id, transaction_id, guest_name, guest_email]
       );
-    } else {
+    } 
+    else {
       await db.query(
-        `INSERT INTO event_attendees (user_id, event_id, transaction_id)
-         VALUES (?, ?, ?)`,
-        [user_id, event_id, transaction_id]
+        `INSERT INTO event_attendees (user_id, user_name, user_mail, event_id, transaction_id)
+         VALUES (?, ?, ?,  ?, ?)`,
+        [user_id, user_name, user_mail,  event_id, transaction_id]
       );
     }
 
@@ -221,13 +225,15 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
       });
     }
 
+
+
     // 7. Send confirmation email
     let email, event_title;
 
     if (submission_type === "guest") {
       email = guest_email;
     } else {
-      const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [user_id]);
+      const [[user]] = await db.query("SELECT email FROM users WHERE user_id = ?", [user_id]);
       email = user?.email;
     }
 
@@ -326,13 +332,13 @@ router.post("/:id/guest-verify-payment", upload.single("paymentImage"), async (r
     }
 
 
-
     await db.query(
       `INSERT INTO event_payment_requests 
         (event_id, transaction_id, payment_image_path, guest_name, guest_email, status,submission_type)
        VALUES (?, ?, ?, ?, ?, 'pending','guest')`,
       [event_id, transaction_id, paymentImage.filename, guest_name, guest_email]
     );
+    
 
     res.status(200).json({ message: "Guest request submitted. Awaiting approval." });
   } catch (err) {

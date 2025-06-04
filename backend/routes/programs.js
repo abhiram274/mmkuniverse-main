@@ -5,6 +5,7 @@ const db = require("../db");
 const multer = require("multer");
 const path = require("path");
 const ExcelJS = require('exceljs');
+const { generateCertificate, sendEmail } = require('../utils/sendcertificate');
 
 // Multer setup
 const storage = multer.diskStorage({
@@ -554,7 +555,7 @@ router.put("/:id/complete", async (req, res) => {
 
 
 
-
+//export excel
 router.get('/:programId/export-excel', async (req, res) => {
   const { programId } = req.params;
 
@@ -606,6 +607,115 @@ router.get('/:programId/export-excel', async (req, res) => {
   } catch (err) {
     console.error("Error exporting Excel:", err);
     res.status(500).json({ error: "Failed to export Excel file." });
+  }
+});
+
+
+
+
+
+
+// 🚀 New API route to send certificates
+router.post("/send-certificates/:programId", async (req, res) => {
+  const { programId } = req.params;
+  const { type } = req.query; // 'joined' or 'participated'
+
+  if (!['joined', 'participated'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid type. Use "joined" or "participated".' });
+  }
+
+  try {
+    // If 'participated', filter by participated=1; else get all attendees.
+    const participationCondition = type === 'participated' ? 'AND ea.participated = 1' : '';
+
+    const [attendees] = await db.query(`
+      SELECT 
+        COALESCE(u.name, pa.guest_name) AS name,
+        COALESCE(u.email, pa.guest_email) AS email,
+        p.title AS program_name
+      FROM program_attendees pa
+      LEFT JOIN users u ON u.user_id = pa.user_id
+      JOIN programs e ON p.id = pa.program_id
+      WHERE pa.program_id = ?
+      ${participationCondition}
+    `, [programId]);
+
+    if (attendees.length === 0) {
+      return res.status(404).json({ message: `No ${type} users found for this program.` });
+
+    }
+
+    for (const attendee of attendees) {
+      const certPath = generateCertificate(attendee.name, attendee.program_name);
+      await sendEmail(attendee.email, attendee.name, certPath);
+    }
+
+    res.json({ message: `Certificates sent to ${type} attendees.` });
+  } catch (err) {
+    console.error("Error sending certificates:", err);
+    res.status(500).json({ error: 'Failed to send certificates' });
+  }
+});
+
+
+// GET attendees for an programs
+router.get("/:programId/attendees", async (req, res) => {
+  const { programId } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+         pa.user_id,
+         pa.guest_email,
+         u.name AS user_name,
+         pa.guest_name,
+         pa.participated
+       FROM program_attendees pa
+       LEFT JOIN users u ON pa.user_id = u.id
+       WHERE pa.program_id = ?`,
+      [programId]
+    );
+
+    res.json({ attendees: rows });
+  } catch (err) {
+    console.error("❌ Error fetching attendees:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+//Mark user as participated
+router.put("/:programId/mark-participation", async (req, res) => {
+  const { userId, guestEmail } = req.body;
+  const programId = req.params.eventId;
+
+  if (!programId || (!userId && !guestEmail)) {
+    return res.status(400).json({ error: "Missing userId or guestEmail, or programtId" });
+  }
+
+  try {
+    let result;
+
+    if (guestEmail) {
+      [result] = await db.query(
+        "UPDATE program_attendees SET participated = TRUE WHERE program_id = ? AND guest_email = ? AND participated = FALSE",
+        [programId, guestEmail]
+      );
+    } else {
+      [result] = await db.query(
+        "UPDATE program_attendees SET participated = TRUE WHERE program_id = ? AND user_id = ? AND participated = FALSE",
+        [programId, userId]
+      );
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Already marked or not found" });
+    }
+
+    res.json({ message: "Participation marked successfully" });
+  } catch (err) {
+    console.error("❌ Error marking participation:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

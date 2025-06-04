@@ -31,18 +31,39 @@ export default function AttendeesModal({ attendees, onClose, onMarkParticipated 
         );
     };
 
+    // const markSelected = () => {
+    //     selectedIds.forEach((id) => {
+    //         //   const att = attendees.find((a) => a.userId === id || a.guest_email === id);
+    //         const att = attendees.find(
+    //             (a) => a.user_id === id || a.guest_email === id
+    //         );
+    //         if (att && !att.participated) {
+    //             onMarkParticipated(att.userId ?? null, att.guest_email ?? null);
+    //         }
+    //     });
+    //     setSelectedIds([]);
+    // };
+
     const markSelected = () => {
-        selectedIds.forEach((id) => {
-            //   const att = attendees.find((a) => a.userId === id || a.guest_email === id);
-            const att = attendees.find(
-                (a) => a.user_id === id || a.guest_email === id
-            );
-            if (att && !att.participated) {
-                onMarkParticipated(att.userId ?? null, att.guest_email ?? null);
-            }
-        });
-        setSelectedIds([]);
-    };
+    selectedIds.forEach((id) => {
+        // Find attendee by matching either user_id or guest_email to the selected ID
+        const attendee = attendees.find(
+            (a) => a.user_id === id || a.guest_email === id
+        );
+
+        if (!attendee || attendee.participated) return;
+
+        // Call the marking function with correct params
+        onMarkParticipated(
+            attendee.user_id ?? null,
+            attendee.guest_email ?? null
+        );
+    });
+
+    setSelectedIds([]);
+};
+
+    
 
     const onMouseDown = (e) => {
         if (!modalRef.current) return;
@@ -113,7 +134,7 @@ export default function AttendeesModal({ attendees, onClose, onMarkParticipated 
                     {paginatedAttendees.map((attendee) => {
                         const id = attendee.user_id ?? attendee.guest_email;
                         const displayName =
-                            attendee.name || attendee.guest_name || attendee.guest_email || "Unknown";
+                            attendee.user_name || attendee.user_mail || attendee.guest_name || attendee.guest_email || "Unknown";
 
                         return (
                             <li

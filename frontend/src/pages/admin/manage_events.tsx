@@ -93,9 +93,18 @@ const ManageEvents = () => {
     try {
       const res = await fetch(`http://localhost:5000/events/${eventId}/attendees`);
       const data = await res.json();
- console.log("Fetched attendees:", data);
-      //  setAttendeesForEvent(data.attendees);
-      setAttendees(data.attendees || []);
+      console.log("Fetched attendees:", data);
+      
+
+    const normalizedAttendees = (data.attendees || []).map(attendee => ({
+      ...attendee,
+      userId: attendee.user_id || null,
+      guestEmail: attendee.guest_email || null,
+    }));
+
+
+      // setAttendees(data.attendees || []);
+        setAttendees(normalizedAttendees);
       setSelectedEventId(eventId);
       //setAttendees(data.attendees);
       setShowModal(true);
@@ -116,6 +125,7 @@ const ManageEvents = () => {
         },
         body: JSON.stringify({ userId, guestEmail })
       });
+      
 
       const data = await res.json();
 
@@ -136,7 +146,7 @@ const ManageEvents = () => {
       const res = await fetch("http://localhost:5000/events"); // Corrected URL
       const data = await res.json();
 
-      console.log("Fetched events:", data);
+      // console.log("Fetched events:", data);
       setEvents(data);
     } catch (err) {
       console.error("Error fetching events:", err);

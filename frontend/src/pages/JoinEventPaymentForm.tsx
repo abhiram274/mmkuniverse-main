@@ -44,6 +44,7 @@ const JoinEventPaymentForm = () => {
       eventId: storedEventId,
       eventName: storedEventName,
     }));
+    
 
     if (storedEventId) {
       const id = storedEventId;
@@ -90,6 +91,8 @@ const JoinEventPaymentForm = () => {
 
     const submissionData = new FormData();
     submissionData.append("userId", formData.userId);
+       submissionData.append("name", formData.name);
+          submissionData.append("email", formData.email);
     submissionData.append("transactionId", formData.transactionId);
     submissionData.append("paymentImage", paymentImage); // image file
 
