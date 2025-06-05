@@ -56,7 +56,7 @@ const Programs = () => {
         }
 
         // Pass user_id as query param if available
-        const url = userId ? `http://localhost:5000/programs/non-complete?user_id=${userId}` : "http://localhost:5000/programs/non-complete";
+        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
         const res = await axios.get(url);
 
 
@@ -134,7 +134,7 @@ const Programs = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/programs/check-attendance?userId=${userId}&programId=${programId}`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/check-attendance?userId=${userId}&programId=${programId}`);
       //   method: "POST",
       //   headers: {
       //     "Content-Type": "application/json"
