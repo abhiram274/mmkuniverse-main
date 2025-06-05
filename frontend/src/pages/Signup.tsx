@@ -39,7 +39,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
+      const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -185,7 +185,7 @@ const Signup = () => {
                   className="mt-2 bg-mmk-purple/70"
                   onClick={async () => {
                     try {
-                      const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+                      const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/send-otp", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: formData.email }),
