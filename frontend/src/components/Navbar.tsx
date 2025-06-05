@@ -19,7 +19,7 @@ const Navbar = () => {
   // Fetch session info on mount
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/auth/session", { withCredentials: true })
+      .get("https://mmkuniverse-main.onrender.com/api/auth/session", { withCredentials: true })
       .then((res) => {
         if (res.data.loggedIn && res.data.user?.name) {
           setUserName(res.data.user.name);
@@ -49,7 +49,7 @@ const Navbar = () => {
   // Logout handler
   const handleLogout = () => {
     axios
-      .post("http://localhost:5000/api/auth/logout", {}, { withCredentials: true })
+      .post("https://mmkuniverse-main.onrender.com/api/auth/logout", {}, { withCredentials: true })
       .then(() => {
         setUserName(null);
         localStorage.removeItem("MMK_U_name");
