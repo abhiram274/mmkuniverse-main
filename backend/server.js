@@ -41,5 +41,5 @@ app.use('/payments',paymentRouter);
 app.use('/program-payments', programPaymentRouter);
 
 app.listen(process.env.PORT, () =>
-  console.log(`Server running on port ${process.env.PORT}`)
+  console.log(`Server running on port ${process.env.DB_PORT}`)
 );
