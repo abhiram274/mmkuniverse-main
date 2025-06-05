@@ -36,12 +36,12 @@ const GuestJoinPaymentForm = () => {
 
     if (eventId) {
       const id = eventId;
-      fetch(`http://localhost:5000/events/${id}`)
+      fetch(`https://mmkuniverse-main.onrender.com/events/${id}`)
         .then((res) => res.json())
         .then((data) => {
           console.log(data)
           if (data.qrcode) {
-            setQrImageUrl(`http://localhost:5000/uploads/${data.qrcode}`);
+            setQrImageUrl(`https://mmkuniverse-main.onrender.com/uploads/${data.qrcode}`);
           }
 
           setFormData((prev) => ({
@@ -83,7 +83,7 @@ const GuestJoinPaymentForm = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/payments/${formData.eventId}/guest-verify-payment`,
+        `https://mmkuniverse-main.onrender.com/payments/${formData.eventId}/guest-verify-payment`,
         {
           method: "POST",
           body: submissionData,
