@@ -102,7 +102,7 @@ const MyProfile = () => {
     if (!userId) return;
 
     const fetchUserInfo = async () => {
-      const res = await fetch(`http://localhost:5000/events/users/${userId}`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/users/${userId}`);
       if (!res.ok) {
         console.error("Failed to fetch user info");
         return;
@@ -112,7 +112,7 @@ const MyProfile = () => {
     };
 
     const fetchJoinedEvents = async () => {
-      const res = await fetch(`http://localhost:5000/events/user-events/${userId}`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/user-events/${userId}`);
       if (!res.ok) {
         console.error("Failed to fetch user events");
         return;
@@ -120,7 +120,7 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-        imageUrl: item.image ? `http://localhost:5000/uploads/${item.image}` : null,
+        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedEvents(withImages);
@@ -130,7 +130,7 @@ const MyProfile = () => {
 
 
     const fetchJoinedPrograms = async () => {
-      const res = await fetch(`http://localhost:5000/programs/user-programs/${userId}`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/user-programs/${userId}`);
       if (!res.ok) {
         console.error("Failed to fetch user programs");
         return;
@@ -138,7 +138,7 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-        imageUrl: item.image ? `http://localhost:5000/uploads/${item.image}` : null,
+        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedPrograms(withImages);
@@ -147,7 +147,7 @@ const MyProfile = () => {
 
 
     const fetchHostedEvents = async () => {
-      const res = await fetch(`http://localhost:5000/events/hosted/${userId}`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/hosted/${userId}`);
       if (!res.ok) {
         console.error("Failed to fetch hosted events");
         return;
@@ -155,7 +155,7 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-        imageUrl: item.image ? `http://localhost:5000/uploads/${item.image}` : null,
+        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setHostedEvents(withImages);
@@ -174,7 +174,7 @@ const MyProfile = () => {
   //Fetch attendees
   const fetchAttendees = async (eventId: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}/attendees`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/attendees`);
       const data = await res.json();
       console.log("Fetched attendees:", data);
       //  setAttendeesForEvent(data.attendees);
@@ -192,7 +192,7 @@ const MyProfile = () => {
 
   const markAsParticipated = async (eventId: number, userId: string | null, guestEmail: string | null) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}/mark-participation`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/mark-participation`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -319,7 +319,7 @@ const MyProfile = () => {
 
   // useEffect(() => {
   //   const fetchEvents = async () => {
-  //     const res = await fetch("http://localhost:5000/events");
+  //     const res = await fetch("https://mmkuniverse-main.onrender.com/events");
   //     const data = await res.json();
   //     setHostedEvents(data);
   //   };
@@ -364,7 +364,7 @@ const MyProfile = () => {
   const handleDelete = async (eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete event");
@@ -376,7 +376,7 @@ const MyProfile = () => {
 
   const handleComplete = async (eventId: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}/complete`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/complete`, {
         method: "PUT",
       });
       if (res.ok) {
@@ -431,8 +431,8 @@ const MyProfile = () => {
 
 
       const endpoint = editingId
-        ? `http://localhost:5000/events/${editingId}` // Corrected endpoint for editing
-        : "http://localhost:5000/events/user-create-event"; // Corrected endpoint for creating
+        ? `https://mmkuniverse-main.onrender.com/events/${editingId}` // Corrected endpoint for editing
+        : "https://mmkuniverse-main.onrender.com/events/user-create-event"; // Corrected endpoint for creating
 
       const method = editingId ? "PUT" : "POST";
 
@@ -843,7 +843,7 @@ const MyProfile = () => {
                             className="bg-yellow-500 text-xs px-3 py-1"
                             onClick={() =>
                               window.open(
-                                `http://localhost:5000/events/${event.id}/export-excel`,
+                                `https://mmkuniverse-main.onrender.com/events/${event.id}/export-excel`,
                                 "_blank"
                               )
                             }
@@ -858,7 +858,7 @@ const MyProfile = () => {
                             disabled={sendingType === 'joined'}
                             onClick={() => {
                               setSendingType('joined');
-                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=joined`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=joined`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())
@@ -877,7 +877,7 @@ const MyProfile = () => {
                             disabled={sendingType === 'participated'}
                             onClick={() => {
                               setSendingType('participated');
-                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=participated`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=participated`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())
