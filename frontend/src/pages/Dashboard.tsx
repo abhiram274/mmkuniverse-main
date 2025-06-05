@@ -61,7 +61,7 @@ const Dashboard = () => {
     if (savedName) setAdminName(savedName);
 
     axios
-      .get("http://localhost:5000/api/auth/admin_session", { withCredentials: true })
+      .get("https://mmkuniverse-main.onrender.com/api/auth/admin_session", { withCredentials: true })
       .then((res) => {
         if (res.data.loggedIn && res.data.admin?.name) {
           setAdminName(res.data.admin.name);
@@ -79,7 +79,7 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     axios
-      .post("http://localhost:5000/api/auth/admin_logout", {}, { withCredentials: true })
+      .post("https://mmkuniverse-main.onrender.com/api/auth/admin_logout", {}, { withCredentials: true })
       .then(() => {
         localStorage.removeItem("admin_id");
         localStorage.removeItem("admin_name");
