@@ -96,7 +96,7 @@ const Events = () => {
           if (isNaN(userId)) userId = null;
         }
 
-        const url = userId ? `http://localhost:5000/events/non-complete?user_id=${userId}` : "http://localhost:5000/events/non-complete";
+        const url = userId ? `https://mmkuniverse-main.onrender.com/events/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/events/non-complete";
         const res = await axios.get(url);
 
         const mappedEvents: Event[] = res.data.map((event) => ({
@@ -173,7 +173,7 @@ const Events = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/events/check-attendance?userId=${userId}&eventId=${eventId}`
+        `https://mmkuniverse-main.onrender.com/events/check-attendance?userId=${userId}&eventId=${eventId}`
       );
       const data = await res.json();
 
@@ -440,7 +440,7 @@ const Events = () => {
                 // formData.append("email", localStorage.getItem("MMK_U_email"));
 
                 try {
-                  const res = await axios.post("http://localhost:5000/events/user-create-event", formData, {
+                  const res = await axios.post("https://mmkuniverse-main.onrender.com/events/user-create-event", formData, {
                     headers: { "Content-Type": "multipart/form-data" },
                   });
 
