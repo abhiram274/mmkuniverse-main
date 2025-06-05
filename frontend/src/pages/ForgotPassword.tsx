@@ -24,7 +24,7 @@ const ForgotPassword = () => {
         setStatus("loading");
         setErrorMessage("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/forgot-password/send-otp", {
+            const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/forgot-password/send-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
         setStatus("loading");
         setErrorMessage("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/forgot-password/reset", {
+            const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/forgot-password/reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp, newPassword }),
