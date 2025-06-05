@@ -120,7 +120,13 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
+<<<<<<< HEAD
         imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
+=======
+        // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
+        imageUrl: item.image || null,
+
+>>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedEvents(withImages);
@@ -138,7 +144,13 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
+<<<<<<< HEAD
         imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
+=======
+        // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
+        imageUrl: item.image || null,
+
+>>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedPrograms(withImages);
@@ -155,7 +167,11 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
+<<<<<<< HEAD
         imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
+=======
+        imageUrl: item.image || null,
+>>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setHostedEvents(withImages);
@@ -425,7 +441,7 @@ const MyProfile = () => {
       if (formData.image) {
         data.append("image", formData.image);
       }
-            if (formData.qrcode) {
+      if (formData.qrcode) {
         data.append("qrcode", formData.qrcode);
       }
 
@@ -443,7 +459,7 @@ const MyProfile = () => {
 
       if (res.ok) {
         toast.success(editingId ? "Event updated" : "Event created");
-        setFormData({ title: "", description: "", date: "", startDate: "", endDate: "", time: "", location: "", organizer: "", category: "", image: null, limit: "", email: "", price: "" , qrcode:null});
+        setFormData({ title: "", description: "", date: "", startDate: "", endDate: "", time: "", location: "", organizer: "", category: "", image: null, limit: "", email: "", price: "", qrcode: null });
         setEditingId(null);
 
       } else {
@@ -476,7 +492,7 @@ const MyProfile = () => {
       image: null,
       email: "",
       price: "",
-      qrcode:null,
+      qrcode: null,
     });
   };
 

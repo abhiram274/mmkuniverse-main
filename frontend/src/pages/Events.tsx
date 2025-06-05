@@ -103,7 +103,7 @@ const Events = () => {
           ...event,
           category: event.category || "Other",
           imageUrl: event.image ?? undefined,
-             qrCodeImage: event.qrcode??undefined,
+          qrCodeImage: event.qrcode??undefined,
           isEnrolled: Boolean(event.isEnrolled),
           end_date: event.end_date ?? undefined,
           start_date: event.start_date ?? undefined,

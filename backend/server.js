@@ -29,8 +29,14 @@ app.use(session({
 }));
 
 app.use('/api/auth', authRoutes);
+
+
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
+
 
 app.use('/events', eventsRouter);
 
