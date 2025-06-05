@@ -54,7 +54,7 @@ router.get("/non-complete", async (req, res) => {
 
     rows.forEach(event => {
       if (event.image) {
-        event.image = `http://localhost:5000/uploads/${event.image}`;
+        event.image = `https://mmkuniverse-main.onrender.com/uploads/${event.image}`;
       }
     });
 
