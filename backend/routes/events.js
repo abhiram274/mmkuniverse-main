@@ -74,7 +74,8 @@ router.get("/", async (req, res) => {
 // Get all *non-completed* events
 router.get("/non-complete", async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE");
+    const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE ORDER BY id DESC");
+
 
 
     rows.forEach(event => {
