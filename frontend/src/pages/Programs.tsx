@@ -280,6 +280,7 @@ const Programs = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
                 {filteredPrograms.map((program) => (
                   <div key={program.id}>
                     <ProgramCard
@@ -296,18 +297,7 @@ const Programs = () => {
                       }
                       
                     />
-                    <Button
-    variant="outline"
-    onClick={() => {
-      const url = `${window.location.origin}/guest-program-join-payment?program_id=${program.id}&program_name=${encodeURIComponent(program.title)}`;
-      navigator.clipboard.writeText(url);
-      toast.success("Join link copied to clipboard!");
-    }}
-    className="flex items-center gap-2 text-sm"
-  >
-    <Share2 className="w-4 h-4" />
-    Share Event Join Link
-  </Button>
+           
                   </div>
                 ))}
               </div>

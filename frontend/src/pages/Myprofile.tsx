@@ -40,7 +40,9 @@ type Event = {
   end_date?: string;
   attendees: number;
   category: string;
-
+  email: string;
+  price: string;
+  qrcode?: string;
 };
 const EVENT_CATEGORIES = ["Workshop", "Seminar", "Conference", "Meetup"];
 const isValidDate = (dateStr: unknown) =>
@@ -84,6 +86,9 @@ const MyProfile = () => {
     category: "",
     limit: "",
     image: null as File | null,
+    email: "",
+    price: "",
+    qrcode: null as File | null,
   });
   const [activeTab, setActiveTab] = useState<"overview" | "events" | "programs" | "hosted events">("overview");
 
@@ -349,6 +354,9 @@ const MyProfile = () => {
       category: event.category || "",
       limit: event.attendance_limit?.toString() || "",
       image: null,
+      email: event.email || "",
+      price: event.price || "",
+      qrcode: null,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -390,7 +398,7 @@ const MyProfile = () => {
       const data = new FormData();
       data.append("user_id", localStorage.getItem("MMK_U_user_id"));
       data.append("user_name", localStorage.getItem("MMK_U_name"));
-      data.append("email", localStorage.getItem("MMK_U_email"));
+      //data.append("email", localStorage.getItem("MMK_U_email"));
 
 
       data.append("title", formData.title);
@@ -411,9 +419,16 @@ const MyProfile = () => {
       data.append("location", formData.location);
       data.append("organizer", formData.organizer);
       data.append("category", formData.category);
+      data.append("email", formData.email);
+      data.append("price", formData.price);
+
       if (formData.image) {
         data.append("image", formData.image);
       }
+            if (formData.qrcode) {
+        data.append("qrcode", formData.qrcode);
+      }
+
 
       const endpoint = editingId
         ? `http://localhost:5000/events/${editingId}` // Corrected endpoint for editing
@@ -428,7 +443,7 @@ const MyProfile = () => {
 
       if (res.ok) {
         toast.success(editingId ? "Event updated" : "Event created");
-        setFormData({ title: "", description: "", date: "", startDate: "", endDate: "", time: "", location: "", organizer: "", category: "", image: null, limit: "", });
+        setFormData({ title: "", description: "", date: "", startDate: "", endDate: "", time: "", location: "", organizer: "", category: "", image: null, limit: "", email: "", price: "" , qrcode:null});
         setEditingId(null);
 
       } else {
@@ -459,6 +474,9 @@ const MyProfile = () => {
       category: "",
       limit: "",
       image: null,
+      email: "",
+      price: "",
+      qrcode:null,
     });
   };
 
@@ -510,43 +528,42 @@ const MyProfile = () => {
                 <CardTitle>{editingId ? "Edit Event" : "Create New Event"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Input
-                  placeholder="Event Title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-                <Textarea
-                  placeholder="Event Description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startDate" className="text-gray-400">Registrations From</Label>
-                    <Input
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value.split("T")[0] })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endDate">To</Label>
-                    <Input
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    />
-                  </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Event Title</label>
+                  <Input
+                    placeholder="Event Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  />
                 </div>
+
+
+                <div>
+                  <label className="block text-gray-500 text-sm font-medium ">Description</label>
+                  <Textarea
+                    placeholder="Event Description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+
+
+
+
+
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="date" className="text-gray-400">Event Starts From</Label>
+                    <Label htmlFor="date" className="text-gray-500">Event Starts From</Label>
                     <Input
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     />
                   </div>
+
+
                   <div>
                     <Label htmlFor="time" className="text-gray-400">Time</Label>
                     <Input
@@ -556,44 +573,142 @@ const MyProfile = () => {
                     />
                   </div>
                 </div>
-                <Input
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-                <Input
-                  placeholder="Organizer"
-                  value={formData.organizer}
-                  onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
-                />
-                <Select
-                  value={formData.category}
-                  onValueChange={(val) => setFormData({ ...formData, category: val })}
-                >
-                  <SelectTrigger className="bg-transparent border-white/20">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EVENT_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  placeholder="Limit of Attendees"
-                  value={formData.limit}
-                  onChange={(e) => setFormData({ ...formData, limit: e.target.value })}
-                />
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.files?.[0] || null })
-                  }
-                />
+
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-500">Location</label>
+
+                    <Input
+                      placeholder="Location"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-500">Mail</label>
+
+                    <Input
+                      placeholder="Your Mail"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+
+
+
+
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-500">Event Price</label>
+                    <Input
+                      placeholder="(Example:₹100) or Free"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    />
+
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-500">Organizer</label>
+
+                    <Input
+                      placeholder="Organizer"
+                      value={formData.organizer}
+                      onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
+                    />
+
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="startDate" className="text-gray-500">Registrations From</Label>
+                    <Input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value.split("T")[0] })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="endDate" className="text-gray-500">To</Label>
+                    <Input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+
+
+
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300">Attendees Limit*</label>
+                    <Input
+                      type="number"
+                      placeholder="Limit of Attendees"
+                      value={formData.limit}
+                      onChange={(e) => setFormData({ ...formData, limit: e.target.value })}
+                    />
+                  </div>
+
+
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300">Category</label>
+                    <Select
+
+                      value={formData.category}
+                      onValueChange={(val) => setFormData({ ...formData, category: val })}
+                    >
+                      <SelectTrigger className="w-full bg-mmk-dark text-white p-2 rounded-md border-2 border-gray-700 ">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EVENT_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+
+
+
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300">Event Image </label>
+
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFormData({ ...formData, image: e.target.files?.[0] || null })
+                      }
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300">Payment Qr Code </label>
+
+
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFormData({ ...formData, qrcode: e.target.files?.[0] || null })
+                      }
+                    />
+
+                  </div>
+                </div>
+
+
                 {editingId && (
                   <Button
                     variant="ghost"

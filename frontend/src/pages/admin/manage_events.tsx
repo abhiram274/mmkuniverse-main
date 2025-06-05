@@ -610,8 +610,6 @@ const ManageEvents = () => {
                         >
                           Export Excel
                         </Button>
-
-
                       </td>
 
 

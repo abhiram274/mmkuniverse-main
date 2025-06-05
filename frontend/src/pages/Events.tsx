@@ -42,11 +42,13 @@ type Event = {
   attendance_limit: number;
   category?: string;
   imageUrl?: string;
+  qrCodeImage?:string;
   isEnrolled?: boolean;
   start_date?: string;
   end_date?: string;
   price: string;
   email: string;
+  
 };
 
 const EVENT_CATEGORIES = ["Workshop", "Hackathon", "Webinar", "Competition", "Career Fair", "Conference", "Social", "Other"];
@@ -101,6 +103,7 @@ const Events = () => {
           ...event,
           category: event.category || "Other",
           imageUrl: event.image ?? undefined,
+             qrCodeImage: event.qrcode??undefined,
           isEnrolled: Boolean(event.isEnrolled),
           end_date: event.end_date ?? undefined,
           start_date: event.start_date ?? undefined,
@@ -434,7 +437,7 @@ const Events = () => {
                 const formData = new FormData(e.currentTarget);
                 formData.append("user_id", localStorage.getItem("MMK_U_user_id"));
                 formData.append("user_name", localStorage.getItem("MMK_U_name"));
-                formData.append("email", localStorage.getItem("MMK_U_email"));
+                // formData.append("email", localStorage.getItem("MMK_U_email"));
 
                 try {
                   const res = await axios.post("http://localhost:5000/events/user-create-event", formData, {
@@ -492,7 +495,7 @@ const Events = () => {
 
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-300">Event Price</label>
-                  <Input className="border-2 border-gray-700 rounded-md p-2" name="price" placeholder="(Example:₹100) or Free" required />
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="price" placeholder="(Example:₹100) or Free"  />
                 </div>
 
                 <div className="flex-1">
@@ -514,6 +517,8 @@ const Events = () => {
                 </div>
 
               </div>
+
+
 
               <div className="flex gap-4">
 
@@ -543,7 +548,7 @@ const Events = () => {
                   <Input className="border-2 border-gray-700 rounded-md p-2" type="file" name="image" accept="image/*" />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-300">Event Qr Code Image </label>
+                  <label className="block text-sm font-medium text-gray-300">Payment Qr Code </label>
                   <Input className="border-2 border-gray-700 rounded-md p-2" type="file" name="qrcode" accept="image/*" />
                 </div>
               </div>

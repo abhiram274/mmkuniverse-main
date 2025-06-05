@@ -138,7 +138,18 @@ const ProgramCard = ({
               {attendees} attending
             </div>
 
-
+         <Button
+    variant="outline"
+    onClick={() => {
+      const url = `${window.location.origin}/guest-program-join-payment?program_id=${id}&program_name=${encodeURIComponent(title)}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Join link copied to clipboard!");
+    }}
+    className="flex items-center gap-2 text-sm"
+  >
+    <Share2 className="w-4 h-4" />
+    Share Event Join Link
+  </Button>
 
             <br />
             <Button

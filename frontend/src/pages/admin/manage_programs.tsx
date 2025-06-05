@@ -98,8 +98,17 @@ const ManagePrograms = () => {
             const res = await fetch(`http://localhost:5000/programs/${programId}/attendees`);
             const data = await res.json();
             console.log("Fetched attendees:", data);
+
+            
+      const normalizedAttendees = (data.attendees || []).map(attendee => ({
+        ...attendee,
+        userId: attendee.user_id || null,
+        guestEmail: attendee.guest_email || null,
+      }));
+
             //  setAttendeesForEvent(data.attendees);
-            setAttendees(data.attendees || []);
+            // setAttendees(data.attendees || []);
+            setAttendees(normalizedAttendees);
             setSelectedProgramId(programId);
             //setAttendees(data.attendees);
             setShowModal(true);
@@ -110,7 +119,6 @@ const ManagePrograms = () => {
 
 
     //Mark as participated
-
     const markAsParticipated = async (programId: number, userId: string | null, guestEmail: string | null) => {
         try {
             const res = await fetch(`http://localhost:5000/programs/${programId}/mark-participation`, {
@@ -122,7 +130,7 @@ const ManagePrograms = () => {
             });
 
             const data = await res.json();
-
+            console.log(data);
             if (res.ok) {
                 toast.success("Marked as participated");
                 fetchAttendees(programId); // Refresh list

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Home,
   Book,
@@ -12,105 +11,55 @@ import {
   LogOut,
   Bell,
   Search,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import axios from "axios";
 
 const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // State to track active main menu item
-  const [activeMenuItem, setActiveMenuItem] = useState("dashboard");
-
-  // Dropdown visibility states
+  const [activeMenuItem, setActiveMenuItem] = useState("");
   const [showEventsDropdown, setShowEventsDropdown] = useState(false);
   const [showProgramsDropdown, setShowProgramsDropdown] = useState(false);
-
-  // Admin name from session/localStorage
   const [adminName, setAdminName] = useState<string | null>(null);
 
-  // Helper functions to check if current route belongs to dropdown groups
-  const isEventsActive = () => {
-    return ["/admin_events", "/manage_events", "/manage_payment_events"].includes(location.pathname);
-  };
-
-  const isProgramsActive = () => {
-    return ["/admin_programs", "/manage_programs"].includes(location.pathname);
-  };
-
+  // Automatically handle active menu and dropdowns
   useEffect(() => {
-
     const path = location.pathname;
 
-
-    if (isEventsActive()) {
+    if (
+      path.startsWith("/admin_events") ||
+      path.startsWith("/manage_events") ||
+      path.startsWith("/manage_payment_events")
+    ) {
       setActiveMenuItem("events");
       setShowEventsDropdown(true);
     } else {
       setShowEventsDropdown(false);
     }
 
-    if (isProgramsActive()) {
+    if (
+      path.startsWith("/admin_programs") ||
+      path.startsWith("/manage_programs") ||
+      path.startsWith("/manage_payment_programs")
+    ) {
       setActiveMenuItem("programs");
       setShowProgramsDropdown(true);
     } else {
       setShowProgramsDropdown(false);
     }
 
-
-
-
-
-
-
-    if (path === "/admin_events") {
-      setActiveMenuItem("events");
-    } else if (path === "/admin_programs") {
-      setActiveMenuItem("programs");
-    } else if (path === "/certificates") {
-      setActiveMenuItem("certificates");
-    } else if (path === "/community") {
-      setActiveMenuItem("community");
-    } else if (path === "/freelance") {
-      setActiveMenuItem("freelance");
-    } 
-    
-     else if (path === "/manage_events") {
-      setActiveMenuItem("events");
-    }
-    
-    
-     else if (path === "/manage_programs") {
-      setActiveMenuItem("programs");
-    }
-    
-    else if (path === "/manage_payment_events") {
-      setActiveMenuItem("manage_payment_events");
-    }
-    
-     else if (path === "/manage_payment_programs") {
-      setActiveMenuItem("manage_payment_programs");
-    }
-    
-    
-    
-    
-    
-    
-    else {
-      setActiveMenuItem("dashboard");
-    }
-    
-  }, [location]);
+    if (path === "/certificates") setActiveMenuItem("certificates");
+    else if (path === "/community") setActiveMenuItem("community");
+    else if (path === "/freelance") setActiveMenuItem("freelance");
+    else if (path === "/dashboard") setActiveMenuItem("dashboard");
+  }, [location.pathname]);
 
   useEffect(() => {
-    if (!adminName) {
-      const savedName = localStorage.getItem("admin_name");
-      if (savedName) setAdminName(savedName);
-    }
-  }, [adminName]);
+    const savedName = localStorage.getItem("admin_name");
+    if (savedName) setAdminName(savedName);
 
-  useEffect(() => {
     axios
       .get("http://localhost:5000/api/auth/admin_session", { withCredentials: true })
       .then((res) => {
@@ -141,26 +90,19 @@ const Dashboard = () => {
       });
   };
 
-  const toggleEventsDropdown = () => {
-    setShowEventsDropdown(!showEventsDropdown);
-  };
-
-  const toggleProgramsDropdown = () => {
-    setShowProgramsDropdown(!showProgramsDropdown);
-  };
-
   return (
     <div className="min-h-screen flex bg-mmk-dark">
       {/* Sidebar */}
-      <div className="w-64 bg-mmk-dark border-r border-white/10 flex flex-col fixed h-full">
+      <div className="w-64 bg-mmk-dark border-r border-white/10 fixed h-full flex flex-col">
         <div className="p-4 border-b border-white/10">
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold text-gradient-primary">MMK Universe</span>
-            <p className="text-gray-400">Welcome back, {adminName}</p>
+          <Link to="/" className="flex flex-col text-gradient-primary font-bold text-lg">
+            MMK Universe
+            <span className="text-sm text-gray-400 font-normal">Welcome back, {adminName}</span>
           </Link>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1">
+          {/* Dashboard */}
           <Link to="/dashboard">
             <button
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
@@ -175,91 +117,87 @@ const Dashboard = () => {
             </button>
           </Link>
 
+          {/* Events Dropdown */}
           <div>
-            <button 
-              className={`w-full flex items-center p-3 rounded-lg transition-colors ${
+            <button
+              className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                 activeMenuItem === "events"
                   ? "bg-mmk-purple text-white"
                   : "text-gray-400 hover:bg-white/5"
               }`}
-              onClick={toggleEventsDropdown}
+              onClick={() => setShowEventsDropdown(!showEventsDropdown)}
             >
-              <Book className="w-5 h-5 mr-3" />
-              EVENTS
+              <span className="flex items-center">
+                <Book className="w-5 h-5 mr-3" />
+                Events
+              </span>
+              {showEventsDropdown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {showEventsDropdown && (
-              <div className="ml-4 space-y-1">
-                {/* <Link to="/admin_events">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
-                    Add Events
-                  </button>
-                </Link> */}
+              <div className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-4">
                 <Link to="/manage_events">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
+                  <button
+                    className={`w-full text-left p-2 rounded-lg transition-colors ${
+                      location.pathname === "/manage_events" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5"
+                    }`}
+                  >
                     Manage Events
                   </button>
                 </Link>
-
-                  <Link to="/manage_payment_events">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
-                    Manage User Payments
+                <Link to="/manage_payment_events">
+                  <button
+                    className={`w-full text-left p-2 rounded-lg transition-colors ${
+                      location.pathname === "/manage_payment_events" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5"
+                    }`}
+                  >
+                    Manage Payments
                   </button>
                 </Link>
-
-
               </div>
-
-
-
-
-
-
-
             )}
           </div>
 
-
-
-
-
-
-
-
-
+          {/* Programs Dropdown */}
           <div>
             <button
-              className={`w-full flex items-center p-3 rounded-lg transition-colors ${
+              className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                 activeMenuItem === "programs"
                   ? "bg-mmk-purple text-white"
                   : "text-gray-400 hover:bg-white/5"
               }`}
-              onClick={toggleProgramsDropdown}
+              onClick={() => setShowProgramsDropdown(!showProgramsDropdown)}
             >
-              <Book className="w-5 h-5 mr-3" />
-              Programs
+              <span className="flex items-center">
+                <Book className="w-5 h-5 mr-3" />
+                Programs
+              </span>
+              {showProgramsDropdown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {showProgramsDropdown && (
-              <div className="ml-4 space-y-1">
-                {/* <Link to="/admin_programs">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
-                    Add Program
-                  </button>
-                </Link> */}
+              <div className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-4">
                 <Link to="/manage_programs">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
+                  <button
+                    className={`w-full text-left p-2 rounded-lg transition-colors ${
+                      location.pathname === "/manage_programs" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5"
+                    }`}
+                  >
                     Manage Programs
                   </button>
                 </Link>
-
-                    <Link to="/manage_payment_programs">
-                  <button className="w-full text-gray-400 hover:bg-white/5 p-2 rounded-lg">
-                    Manage User Payments
+                <Link to="/manage_payment_programs">
+                  <button
+                    className={`w-full text-left p-2 rounded-lg transition-colors ${
+                      location.pathname === "/manage_payment_programs" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5"
+                    }`}
+                  >
+                    Manage Payments
                   </button>
                 </Link>
               </div>
             )}
           </div>
 
+          {/* Certificates */}
           <Link to="/certificates">
             <button
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
@@ -274,6 +212,7 @@ const Dashboard = () => {
             </button>
           </Link>
 
+          {/* Community */}
           <Link to="/community">
             <button
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
@@ -288,6 +227,7 @@ const Dashboard = () => {
             </button>
           </Link>
 
+          {/* Freelance */}
           <Link to="/freelance">
             <button
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
@@ -303,11 +243,10 @@ const Dashboard = () => {
           </Link>
         </nav>
 
+        {/* Settings & Logout */}
         <div className="p-4 border-t border-white/10">
           <div className="space-y-1">
-            <button
-              className="w-full flex items-center p-3 rounded-lg text-gray-400 hover:bg-white/5 transition-colors"
-            >
+            <button className="w-full flex items-center p-3 rounded-lg text-gray-400 hover:bg-white/5 transition-colors">
               <Settings className="w-5 h-5 mr-3" />
               Settings
             </button>
@@ -321,37 +260,30 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 ml-64">
-        {/* Header */}
         <header className="bg-mmk-dark/80 backdrop-blur-sm border-b border-white/10 sticky top-0 z-10">
           <div className="flex items-center justify-between p-4">
-            <div>
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-            </div>
+            <h1 className="text-2xl font-bold">Dashboard</h1>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-gray-400 hover:text-white rounded-full hover:bg-white/5">
                 <Search className="w-5 h-5" />
               </button>
               <button className="p-2 text-gray-400 hover:text-white rounded-full hover:bg-white/5 relative">
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-mmk-amber rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-mmk-amber rounded-full" />
               </button>
-              <button className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-mmk-purple flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">SM</span>
-                </div>
-              </button>
+              <div className="w-8 h-8 rounded-full bg-mmk-purple flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">SM</span>
+              </div>
             </div>
           </div>
         </header>
-        
-        {/* Dashboard Content */}
+        {/* Place your dashboard content here */}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-

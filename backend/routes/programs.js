@@ -172,16 +172,16 @@ router.post("/",
 
 // In routes/events.js or a new route file
 router.get("/check-attendance", async (req, res) => {
-  const { userId, eventId } = req.query;
+  const { userId, programId } = req.query;
 
-  if (!userId || !eventId) {
+  if (!userId || !programId) {
     return res.status(400).json({ error: "Missing userId or programId" });
   }
 
   try {
     const [rows] = await db.query(
       "SELECT * FROM program_attendees WHERE user_id = ? AND program_id = ?",
-      [userId, eventId]
+      [userId, programId]
     );
 
     if (rows.length > 0) {
@@ -194,12 +194,6 @@ router.get("/check-attendance", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
-
-
-
 
 
  // PUT - Update a program
@@ -317,6 +311,9 @@ router.get("/check-attendance", async (req, res) => {
 //     }
 //   });
 
+//
+
+//Update a program
 router.put("/:id",
   upload.fields([
     { name: "image", maxCount: 1 },
@@ -474,11 +471,6 @@ router.delete("/:id", async (req, res) => {
 
 
 
-
-
-
-
-
 // GET all programs with optional user_id query to check enrollment
 router.get("/", async (req, res) => {
   const userId = req.query.user_id;  // Optional
@@ -612,7 +604,30 @@ router.get('/:programId/export-excel', async (req, res) => {
 
 
 
+// GET attendees for an programs
+router.get("/:programId/attendees", async (req, res) => {
+  const { programId } = req.params;
 
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+         pa.user_id,
+         pa.guest_email,
+         u.name AS user_name,
+         pa.guest_name,
+         pa.participated
+       FROM program_attendees pa
+       LEFT JOIN users u ON pa.user_id = u.user_id
+       WHERE pa.program_id = ?`,
+      [programId]
+    );
+
+    res.json({ attendees: rows });
+  } catch (err) {
+    console.error("❌ Error fetching attendees:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 // 🚀 New API route to send certificates
@@ -658,40 +673,16 @@ router.post("/send-certificates/:programId", async (req, res) => {
 });
 
 
-// GET attendees for an programs
-router.get("/:programId/attendees", async (req, res) => {
-  const { programId } = req.params;
-
-  try {
-    const [rows] = await db.query(
-      `SELECT 
-         pa.user_id,
-         pa.guest_email,
-         u.name AS user_name,
-         pa.guest_name,
-         pa.participated
-       FROM program_attendees pa
-       LEFT JOIN users u ON pa.user_id = u.id
-       WHERE pa.program_id = ?`,
-      [programId]
-    );
-
-    res.json({ attendees: rows });
-  } catch (err) {
-    console.error("❌ Error fetching attendees:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 
 //Mark user as participated
 router.put("/:programId/mark-participation", async (req, res) => {
   const { userId, guestEmail } = req.body;
-  const programId = req.params.eventId;
+  const programId = req.params.programId;
 
-  if (!programId || (!userId && !guestEmail)) {
-    return res.status(400).json({ error: "Missing userId or guestEmail, or programtId" });
-  }
+  // if (!programId || (!userId && !guestEmail)) {
+  //   return res.status(400).json({ error: "Missing userId or guestEmail, or programtId" });
+  // }
 
   try {
     let result;
@@ -701,12 +692,15 @@ router.put("/:programId/mark-participation", async (req, res) => {
         "UPDATE program_attendees SET participated = TRUE WHERE program_id = ? AND guest_email = ? AND participated = FALSE",
         [programId, guestEmail]
       );
-    } else {
-      [result] = await db.query(
-        "UPDATE program_attendees SET participated = TRUE WHERE program_id = ? AND user_id = ? AND participated = FALSE",
-        [programId, userId]
-      );
-    }
+    }  else if (userId) {
+          // Mark participation by user ID
+          [result] = await db.query(
+            "UPDATE program_attendees SET participated = TRUE WHERE program_id = ? AND user_id = ? AND participated = FALSE",
+            [programId, userId]
+          );
+        } else {
+          return res.status(400).json({ error: "Either userId or guestEmail must be provided" });
+        }
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Already marked or not found" });

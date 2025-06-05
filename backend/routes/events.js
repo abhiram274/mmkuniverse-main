@@ -136,9 +136,6 @@ router.post("/",
 
 
 
-
-
-
 //User Create Event
 router.post("/user-create-event",
   //  upload.single("image"), 
@@ -154,10 +151,13 @@ router.post("/user-create-event",
         user_id, user_name, email // 🔥 Passed from frontend
       } = req.body;
 
-      const image = req.file ? req.file.filename : null;
-      const qrcode = req.files["qrcode"]
-        ? req.files["qrcode"][0].filename
-        : null;
+const image = req.files["image"]
+  ? req.files["image"][0].filename
+  : null;
+
+const qrcode = req.files["qrcode"]
+  ? req.files["qrcode"][0].filename
+  : null;
 
       const formattedDate = formatDate(date);
       const formattedStartDate = startDate ? formatDate(startDate) : null;
@@ -167,7 +167,7 @@ router.post("/user-create-event",
       // 🔹 First insert the event
       const [eventResult] = await db.query(
         `INSERT INTO events (title, description, date, start_date, end_date, time, location, price, organizer, category, image, attendance_limit, qrcode, email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [title, description, formattedDate, formattedStartDate, formattedEndDate, time, location, price, organizer, category, image, attendeeLimit, qrcode, email]
       );
 
@@ -185,7 +185,6 @@ router.post("/user-create-event",
       res.status(500).json({ error: err.message });
     }
   });
-
 
 
 
@@ -214,12 +213,6 @@ router.get("/check-attendance", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
-
-
-
 
 
 // Update event
@@ -495,9 +488,6 @@ router.post("/send-certificates/:eventId", async (req, res) => {
 router.put("/:eventId/mark-participation", async (req, res) => {
   const { userId, guestEmail } = req.body;
   const eventId = req.params.eventId;
-
-
-
   try {
     let result;
 

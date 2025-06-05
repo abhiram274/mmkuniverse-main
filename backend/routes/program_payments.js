@@ -209,7 +209,7 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
     if (submission_type === "guest") {
       email = guest_email;
     } else {
-      const [[user]] = await db.query("SELECT email FROM users WHERE id = ?", [user_id]);
+      const [[user]] = await db.query("SELECT email FROM users WHERE user_id = ?", [user_id]);
       email = user?.email;
     }
 
