@@ -44,12 +44,12 @@ const JoinProgramPaymentForm = () => {
 
    if (storedProgramtId) {
       const id = storedProgramtId;
-      fetch(`http://localhost:5000/programs/${id}`)
+      fetch(`https://mmkuniverse-main.onrender.com/programs/${id}`)
         .then((res) => res.json())
         .then((data) => {
           console.log(data)
           if (data.qrcode) {
-            setQrImageUrl(`http://localhost:5000/uploads/${data.qrcode}`);
+            setQrImageUrl(`https://mmkuniverse-main.onrender.com/uploads/${data.qrcode}`);
           }
           setFormData((prev) => ({
             ...prev,
@@ -93,7 +93,7 @@ const JoinProgramPaymentForm = () => {
 
 
     try {
-      const res = await fetch(`http://localhost:5000/program-payments/${formData.programId}/verify-payment`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/program-payments/${formData.programId}/verify-payment`, {
         method: "POST",
 
         body: submissionData,
