@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
     rows.forEach(program => {
 
       if (program.image) {
-        program.image = `http://localhost:5000/uploads/${program.image}`;
+        program.image = `https://mmkuniverse-main.onrender.com/uploads/${program.image}`;
       }
     });
     res.json(rows);
