@@ -32,7 +32,7 @@ export default function VerifyPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/payments/${eventId}/verify-payment`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/payments/${eventId}/verify-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, transactionId }),
