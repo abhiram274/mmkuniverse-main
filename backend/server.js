@@ -33,7 +33,6 @@ app.use(express.json());
 // }));
 
 
-
 app.use(cors({
   origin: function (origin, callback) {
     const allowed = [
@@ -70,11 +69,19 @@ app.use('/payments',paymentRouter);
 app.use('/program-payments', programPaymentRouter);
 
 
+
 // app.use(express.static(path.join(__dirname, 'build')));
 
 // // After your API routes, send index.html for all other requests (i.e., frontend routes)
 // app.get('*', (req, res) => {
 //   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+
+// app.use(express.static(path.join(__dirname, 'frontend')));
+
+// // // After your API routes, send index.html for all other requests (i.e., frontend routes)
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+
 // });
 
 

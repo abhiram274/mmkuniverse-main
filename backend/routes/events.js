@@ -205,33 +205,6 @@ router.post("/user-create-event",
 
 
 
-
-// In routes/events.js or a new route file
-router.get("/check-attendance", async (req, res) => {
-  const { userId, eventId } = req.query;
-
-  if (!userId || !eventId) {
-    return res.status(400).json({ error: "Missing userId or eventId" });
-  }
-
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
-      [userId, eventId]
-    );
-
-    if (rows.length > 0) {
-      res.json({ alreadyJoined: true });
-    } else {
-      res.json({ alreadyJoined: false });
-    }
-  } catch (err) {
-    console.error("Error checking attendance:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-
 // Update event
 router.put("/:id",
   // upload.single("image"),
@@ -317,6 +290,33 @@ router.get('/user-events/:userId', async (req, res) => {
 });
 
 
+
+
+
+// In routes/events.js or a new route file
+router.get("/check-attendance", async (req, res) => {
+  const { userId, eventId } = req.query;
+
+  if (!userId || !eventId) {
+    return res.status(400).json({ error: "Missing userId or eventId" });
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
+      [userId, eventId]
+    );
+
+    if (rows.length > 0) {
+      res.json({ alreadyJoined: true });
+    } else {
+      res.json({ alreadyJoined: false });
+    }
+  } catch (err) {
+    console.error("Error checking attendance:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 // GET user info by user_id

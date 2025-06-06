@@ -59,17 +59,36 @@ const Programs = () => {
         const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
         const res = await axios.get(url);
 
+        const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
 
-        const data: Program[] = res.data.map((p: Program) => ({
-          ...p,
-          image: p.image || "",
-          isFree: Boolean(p.isFree),
-          isCertified: Boolean(p.isCertified),
-          isLive: Boolean(p.isLive),
-          isEnrolled: Boolean(p.isEnrolled),
-          end_date: p.end_date ?? undefined,
-          start_date: p.start_date ?? undefined,
-        }));
+        // const data: Program[] = res.data.map((p: Program) => ({
+        //   ...p,
+        //   image: p.image || "",
+        //   isFree: Boolean(p.isFree),
+        //   isCertified: Boolean(p.isCertified),
+        //   isLive: Boolean(p.isLive),
+        //   isEnrolled: Boolean(p.isEnrolled),
+        //   end_date: p.end_date ?? undefined,
+        //   start_date: p.start_date ?? undefined,
+        // }));
+
+        const data: Program[] = res.data.map((p: Program) => {
+          const imagePath = p.image && !p.image.startsWith("http")
+            ? `${CLOUDINARY_BASE}${p.image}`
+            : p.image;
+
+          return {
+            ...p,
+            image: imagePath || "",
+            isFree: Boolean(p.isFree),
+            isCertified: Boolean(p.isCertified),
+            isLive: Boolean(p.isLive),
+            isEnrolled: Boolean(p.isEnrolled),
+            end_date: p.end_date ?? undefined,
+            start_date: p.start_date ?? undefined,
+          };
+        });
+
 
         setProgramsData(data);
 
@@ -280,7 +299,7 @@ const Programs = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
+
                 {filteredPrograms.map((program) => (
                   <div key={program.id}>
                     <ProgramCard
@@ -295,9 +314,9 @@ const Programs = () => {
                         new Date() < new Date(program.start_date) || // before event start
                         program.attendees >= program.attendance_limit // attendee limit reached
                       }
-                      
+
                     />
-           
+
                   </div>
                 ))}
               </div>

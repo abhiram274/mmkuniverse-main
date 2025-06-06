@@ -142,9 +142,9 @@ router.post('/admin_login', async (req, res) => {
 
 
 // ➤ Logout
-router.post('/logout', (req, res) => {
-  return res.json({ message: 'Logged out (client must remove token)' });
-});
+// router.post('/logout', (req, res) => {
+//   return res.json({ message: 'Logged out (client must remove token)' });
+// });
 
 
 
@@ -177,7 +177,23 @@ router.post('/logout', (req, res) => {
 // });
 
 
+router.get('/session', (req, res) => {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
 
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ loggedIn: false });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = verifyToken(token); // Use your `verifyToken` function
+    return res.status(200).json({ loggedIn: true, user: decoded });
+  } catch (err) {
+    console.error("Session check failed:", err.message);
+    return res.status(401).json({ loggedIn: false });
+  }
+});
 // Logout
 // Logout Route (JWT-based)
 // router.post('/logout', (req, res) => {

@@ -11,7 +11,7 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-
+  
   
   const [userName, setUserName] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -50,12 +50,12 @@ useEffect(() => {
 
 
   // Load name from localStorage as fallback (for fast render)
-  useEffect(() => {
-    if (!userName) {
-      const savedName = localStorage.getItem("MMK_U_name");
-      if (savedName) setUserName(savedName);
-    }
-  }, [userName]);
+  // useEffect(() => {
+  //   if (!userName) {
+  //     const savedName = localStorage.getItem("MMK_U_name");
+  //     if (savedName) setUserName(savedName);
+  //   }
+  // }, [userName]);
 
   // Logout handler
   // const handleLogout = () => {
@@ -78,7 +78,6 @@ useEffect(() => {
   localStorage.removeItem("MMK_U_name");
   localStorage.removeItem("MMK_U_email");
   localStorage.removeItem("MMK_U_user_id");
-
   setUserName(null);
   navigate("/login");
 };
@@ -99,7 +98,7 @@ const navLinkClass = (path: string) =>
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
   <Link to="/home" className="flex items-center">
   <span className="font-bold text-gray-400 mr-1">Welcome</span>
-  <span className="text-2xl font-bold text-gradient-primary">{userName}</span>
+  <span className="text-2xl font-bold text-gradient-primary">{userName || "Guest"}</span>
 </Link>
 
 
@@ -140,11 +139,11 @@ const navLinkClass = (path: string) =>
                 Sign Up
               </Button>
             </Link> */}
-            <Link to="/logout">
+            
               <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700">
                 Logout
               </Button>
-            </Link>
+           
 
           </div>
         </div>

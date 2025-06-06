@@ -41,8 +41,13 @@ const GuestProgramJoinPaymentForm = () => {
         .then((data) => {
           console.log(data)
           if (data.qrcode) {
-            setQrImageUrl(data.qrcode);
+            let imageUrl = data.qrcode;
 
+            if (!imageUrl.startsWith("http")) {
+              imageUrl = `https://res.cloudinary.com/dxf8n44lz/image/upload/${imageUrl}`;
+            }
+
+            setQrImageUrl(imageUrl);
           }
 
           setFormData((prev) => ({
@@ -179,7 +184,7 @@ const GuestProgramJoinPaymentForm = () => {
               )}
 
               <p className="text-sm text-white/80 mt-2">Scan the QR code to pay</p>
-              <strong className="text-sm text-white/80 mt-2">Price: ₹{formData.programPrice}</strong>
+              <strong className="text-sm text-white/80 mt-2">Price: ₹{formData.programPrice}/-</strong>
 
             </div>
 

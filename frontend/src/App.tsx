@@ -34,6 +34,7 @@ import JoinProgramPaymentForm from "./pages/JoinProgramPaymentForm";
 import ManageProgramPayments from "./pages/admin/manage-program-payments";
 import GuestJoinPaymentForm from "./pages/GuestJoinPaymentForm";
 import GuestProgramJoinPaymentForm from "./pages/GuestProgramJoinPaymentForm";
+import { AuthProvider } from "./context/AuthContext";
 
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+        <AuthProvider> 
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Sample />} />
@@ -99,6 +101,7 @@ const App = () => (
               <MyProfile />
             </UserProtectedRoute>
           } />
+
 
 
           <Route path="/forum" element={<ForumBlogs />} />
@@ -165,6 +168,7 @@ const App = () => (
 
         </Routes>
       </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

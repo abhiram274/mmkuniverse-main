@@ -42,13 +42,13 @@ type Event = {
   attendance_limit: number;
   category?: string;
   imageUrl?: string;
-  qrCodeImage?:string;
+  qrCodeImage?: string;
   isEnrolled?: boolean;
   start_date?: string;
   end_date?: string;
   price: string;
   email: string;
-  
+
 };
 
 const EVENT_CATEGORIES = ["Workshop", "Hackathon", "Webinar", "Competition", "Career Fair", "Conference", "Social", "Other"];
@@ -99,16 +99,25 @@ const Events = () => {
         const url = userId ? `https://mmkuniverse-main.onrender.com/events/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/events/non-complete";
         const res = await axios.get(url);
 
-        const mappedEvents: Event[] = res.data.map((event) => ({
-          ...event,
-          category: event.category || "Other",
-          // imageUrl: event.image ?? undefined,
-          imageUrl: event.imageUrl ?? event.image ?? undefined,
-          qrCodeImage: event.qrcode??undefined,
-          isEnrolled: Boolean(event.isEnrolled),
-          end_date: event.end_date ?? undefined,
-          start_date: event.start_date ?? undefined,
-        }));
+        const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
+        const mappedEvents: Event[] = res.data.map((event) => {
+          let imageUrl = event.imageUrl ?? event.image ?? "";
+
+          // If it's not a full URL already, add the Cloudinary base path
+          if (imageUrl && !imageUrl.startsWith("http")) {
+            imageUrl = baseCloudinaryURL + imageUrl;
+          }
+
+          return {
+            ...event,
+            category: event.category || "Other",
+            imageUrl,
+            qrCodeImage: event.qrcode ?? undefined,
+            isEnrolled: Boolean(event.isEnrolled),
+            end_date: event.end_date ?? undefined,
+            start_date: event.start_date ?? undefined,
+          };
+        });
 
         setEvents(mappedEvents);
       } catch (error) {
@@ -170,7 +179,6 @@ const Events = () => {
     }
 
     const userId = storedId; // keep as string "MMK_U_1234"
-
 
     try {
       const res = await fetch(
@@ -328,7 +336,7 @@ const Events = () => {
                   {event.imageUrl && (
                     <div className="relative overflow-hidden">
                       <img
-                          src={event.imageUrl || "/placeholder.jpg"}
+                        src={event.imageUrl || "/placeholder.jpg"}
                         alt={event.title}
                         className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                       />
@@ -373,7 +381,7 @@ const Events = () => {
                     </div>
 
 
-                    
+
                     <div className="flex justify-between items-center text-sm text-gray-400">
                       <div>By: {event.organizer}</div>
                       <div className="flex items-center gap-1">
@@ -496,7 +504,7 @@ const Events = () => {
 
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-300">Event Price</label>
-                  <Input className="border-2 border-gray-700 rounded-md p-2" name="price" placeholder="(Example:₹100) or Free"  />
+                  <Input className="border-2 border-gray-700 rounded-md p-2" name="price" placeholder="(Example:₹100) or Free" />
                 </div>
 
                 <div className="flex-1">

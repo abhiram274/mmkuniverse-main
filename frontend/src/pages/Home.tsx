@@ -53,24 +53,24 @@ const Home = () => {
   const navigate = useNavigate();
 
   // Fetch session info on mount
-  useEffect(() => {
-    axios
-      .get("https://mmkuniverse-main.onrender.com/api/auth/session", { withCredentials: true })
-      .then((res) => {
-        if (res.data.loggedIn && res.data.user?.name) {
-          setUserName(res.data.user.name);
-          // Save to localStorage so it persists on reload
-          localStorage.setItem("MMK_U_name", res.data.user.name);
-        } else {
-          setUserName(null);
-          localStorage.removeItem("MMK_U_name");
-        }
-      })
-      .catch(() => {
-        setUserName(null);
-        localStorage.removeItem("MMK_U_name");
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("https://mmkuniverse-main.onrender.com/api/auth/session", { withCredentials: true })
+  //     .then((res) => {
+  //       if (res.data.loggedIn && res.data.user?.name) {
+  //         setUserName(res.data.user.name);
+  //         // Save to localStorage so it persists on reload
+  //         localStorage.setItem("MMK_U_name", res.data.user.name);
+  //       } else {
+  //         setUserName(null);
+  //         localStorage.removeItem("MMK_U_name");
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setUserName(null);
+  //       localStorage.removeItem("MMK_U_name");
+  //     });
+  // }, []);
 
   // Load name from localStorage as fallback (for fast render)
   useEffect(() => {
@@ -81,18 +81,24 @@ const Home = () => {
   }, [userName]);
 
   // Logout handler
-  const handleLogout = () => {
-    axios
-      .post("https://mmkuniverse-main.onrender.com/api/auth/logout", {}, { withCredentials: true })
-      .then(() => {
-        setUserName(null);
-        localStorage.removeItem("MMK_U_name");
-        navigate("/login"); // redirect to login after logout
-      })
-      .catch(() => {
-        alert("Logout failed. Please try again.");
-      });
-  };
+  // const handleLogout = () => {
+  //   axios
+  //     .post("https://mmkuniverse-main.onrender.com/api/auth/logout", {}, { withCredentials: true })
+  //     .then(() => {
+  //       setUserName(null);
+  //       localStorage.removeItem("MMK_U_name");
+  //       navigate("/login"); // redirect to login after logout
+  //     })
+  //     .catch(() => {
+  //       alert("Logout failed. Please try again.");
+  //     });
+  // };
+        console.log("🧪 Checking localStorage on route:");
+  console.log("user_id:", localStorage.getItem("MMK_U_user_id"));
+    console.log("name:", localStorage.getItem("MMK_U_name"));
+
+  console.log("email:", localStorage.getItem("MMK_U_email"));
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
