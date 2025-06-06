@@ -17,11 +17,11 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({
-  origin: ['http://localhost:8080', 'https://mmkuniverse-main.vercel.app'], 
-   credentials: true,
-   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-}));
+// app.use(cors({
+//   origin: ['http://localhost:8080', 'https://mmkuniverse-main.vercel.app'], 
+//    credentials: true,
+//    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+// }));
 
 // app.use(session({
 //   secret: process.env.SESSION_SECRET,
@@ -31,6 +31,25 @@ app.use(cors({
 //     sameSite:'none',// or 'none' if https & cross-site
 //     secure: true }, // Use `true` if HTTPS
 // }));
+
+
+
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowed = [
+      'http://localhost:8080',
+      'https://mmkuniverse-main.vercel.app',
+    ];
+
+    if (!origin || allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
 
 app.use('/api/auth', authRoutes);
 
