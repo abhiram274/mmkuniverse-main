@@ -57,6 +57,7 @@ const Signup = () => {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("MMK_U_token", data.token);
         localStorage.setItem("MMK_U_user_id", data.user_id);
         localStorage.setItem("MMK_U_name", data.name);
         localStorage.setItem("MMK_U_email", data.email);

@@ -12,29 +12,40 @@ const Navbar = () => {
   };
 
 
-
+  
   const [userName, setUserName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Fetch session info on mount
-  useEffect(() => {
-    axios
-      .get("https://mmkuniverse-main.onrender.com/api/auth/session", { withCredentials: true })
-      .then((res) => {
-        if (res.data.loggedIn && res.data.user?.name) {
-          setUserName(res.data.user.name);
-          // Save to localStorage so it persists on reload
-          localStorage.setItem("MMK_U_name", res.data.user.name);
-        } else {
-          setUserName(null);
-          localStorage.removeItem("MMK_U_name");
-        }
-      })
-      .catch(() => {
-        setUserName(null);
-        localStorage.removeItem("MMK_U_name");
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("https://mmkuniverse-main.onrender.com/api/auth/session", { withCredentials: true })
+  //     .then((res) => {
+  //       if (res.data.loggedIn && res.data.user?.name) {
+  //         setUserName(res.data.user.name);
+  //         // Save to localStorage so it persists on reload
+  //         localStorage.setItem("MMK_U_name", res.data.user.name);
+  //       } else {
+  //         setUserName(null);
+  //         localStorage.removeItem("MMK_U_name");
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setUserName(null);
+  //       localStorage.removeItem("MMK_U_name");
+  //     });
+  // }, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("MMK_U_token");
+  const name = localStorage.getItem("MMK_U_name");
+
+  if (token && name) {
+    setUserName(name);
+  } else {
+    setUserName(null);
+  }
+}, []);
 
 
 
@@ -47,19 +58,30 @@ const Navbar = () => {
   }, [userName]);
 
   // Logout handler
-  const handleLogout = () => {
-    axios
-      .post("https://mmkuniverse-main.onrender.com/api/auth/logout", {}, { withCredentials: true })
-      .then(() => {
-        setUserName(null);
-        localStorage.removeItem("MMK_U_name");
-        navigate("/login"); // redirect to login after logout
-      })
-      .catch(() => {
-        alert("Logout failed. Please try again.");
-      });
-  };
+  // const handleLogout = () => {
+  //   axios
+  //     .post("https://mmkuniverse-main.onrender.com/api/auth/logout", {}, { withCredentials: true })
+  //     .then(() => {
+  //       setUserName(null);
+  //       localStorage.removeItem("MMK_U_name");
+  //       navigate("/login"); // redirect to login after logout
+  //     })
+  //     .catch(() => {
+  //       alert("Logout failed. Please try again.");
+  //     });
+  // };
 
+
+  const handleLogout = () => {
+  // Clear all user info from localStorage
+  localStorage.removeItem("MMK_U_token");
+  localStorage.removeItem("MMK_U_name");
+  localStorage.removeItem("MMK_U_email");
+  localStorage.removeItem("MMK_U_user_id");
+
+  setUserName(null);
+  navigate("/login");
+};
   const isActive = (path: string) => location.pathname === path;
 
   // const navLinkClass = (path: string) =>
