@@ -51,12 +51,12 @@ app.use('/payments',paymentRouter);
 app.use('/program-payments', programPaymentRouter);
 
 
-app.use(express.static(path.join(__dirname, 'build')));
+// app.use(express.static(path.join(__dirname, 'build')));
 
-// After your API routes, send index.html for all other requests (i.e., frontend routes)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+// // After your API routes, send index.html for all other requests (i.e., frontend routes)
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// });
 
 
 
