@@ -64,7 +64,7 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/da357f76-7c4c-4791-a095-f2673fbb118e) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
+## Can I connect a custom domain to my MMK project?
 
 Yes it is!
 

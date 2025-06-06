@@ -8,7 +8,7 @@ interface CommunityTimestampProps {
 const CommunityTimestamp = ({ currentTime }: CommunityTimestampProps) => {
   return (
     <div className="text-xs text-gray-400 text-right">
-      Lovable | {format(currentTime, "HH:mm 'on' MMM dd, yyyy")}
+      MMK Universe {format(currentTime, "HH:mm 'on' MMM dd, yyyy")}
     </div>
   );
 };
