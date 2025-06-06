@@ -14,8 +14,8 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:8080', 
-  credentials: true,
+  origin: ['http://localhost:8080', 'https://mmkuniverse-main.vercel.app'], 
+   credentials: true,
    methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
@@ -24,8 +24,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    sameSite:'lax',// or 'none' if https & cross-site
-    secure: false }, // Use `true` if HTTPS
+    sameSite:'none',// or 'none' if https & cross-site
+    secure: true }, // Use `true` if HTTPS
 }));
 
 app.use('/api/auth', authRoutes);

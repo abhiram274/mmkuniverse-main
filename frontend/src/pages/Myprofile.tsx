@@ -120,13 +120,8 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-<<<<<<< HEAD
-        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-=======
         // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         imageUrl: item.image || null,
-
->>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedEvents(withImages);
@@ -144,13 +139,10 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-<<<<<<< HEAD
-        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-=======
+
         // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         imageUrl: item.image || null,
 
->>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedPrograms(withImages);
@@ -167,11 +159,9 @@ const MyProfile = () => {
       const data = await res.json();
       const withImages = data.map((item: Event) => ({
         ...item,
-<<<<<<< HEAD
-        imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-=======
+
+        // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
         imageUrl: item.image || null,
->>>>>>> d7d0968 (committed)
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setHostedEvents(withImages);

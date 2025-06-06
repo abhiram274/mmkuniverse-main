@@ -41,11 +41,8 @@ const GuestProgramJoinPaymentForm = () => {
         .then((data) => {
           console.log(data)
           if (data.qrcode) {
-<<<<<<< HEAD
-            setQrImageUrl(`https://mmkuniverse-main.onrender.com/uploads/${data.qrcode}`);
-=======
             setQrImageUrl(data.qrcode);
->>>>>>> d7d0968 (committed)
+
           }
 
           setFormData((prev) => ({

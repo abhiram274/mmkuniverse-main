@@ -54,12 +54,6 @@ router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM programs");
 
-    rows.forEach(program => {
-
-      if (program.image) {
-        program.image = `https://mmkuniverse-main.onrender.com/uploads/${program.image}`;
-      }
-    });
 
     
 
@@ -77,16 +71,7 @@ router.get("/", async (req, res) => {
 router.get("/non-complete", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM programs WHERE completed = FALSE");
-
-
-    rows.forEach(event => {
-      if (event.image) {
-        event.image = `https://mmkuniverse-main.onrender.com/uploads/${event.image}`;
-      }
-    });
-
-
-
+    
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

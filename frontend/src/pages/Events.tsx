@@ -102,7 +102,8 @@ const Events = () => {
         const mappedEvents: Event[] = res.data.map((event) => ({
           ...event,
           category: event.category || "Other",
-          imageUrl: event.image ?? undefined,
+          // imageUrl: event.image ?? undefined,
+          imageUrl: event.imageUrl ?? event.image ?? undefined,
           qrCodeImage: event.qrcode??undefined,
           isEnrolled: Boolean(event.isEnrolled),
           end_date: event.end_date ?? undefined,
@@ -327,7 +328,7 @@ const Events = () => {
                   {event.imageUrl && (
                     <div className="relative overflow-hidden">
                       <img
-                        src={event.imageUrl}
+                          src={event.imageUrl || "/placeholder.jpg"}
                         alt={event.title}
                         className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
                       />

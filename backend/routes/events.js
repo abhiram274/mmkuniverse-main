@@ -53,12 +53,13 @@ router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM events");
 
-    rows.forEach(event => {
+    // rows.forEach(event => {
 
-      if (event.image) {
-        event.image = `https://mmkuniverse-main.onrender.com/uploads/${event.image}`;
-      }
-    });
+    //   if (event.image) {
+    //     event.image = `${event.image}`;
+    //   }
+    // });
+    
 
    
 
@@ -76,16 +77,6 @@ router.get("/non-complete", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE ORDER BY id DESC");
 
-
-
-    rows.forEach(event => {
-      if (event.image) {
-        event.image = `https://mmkuniverse-main.onrender.com/uploads/${event.image}`;
-      }
-    });
-
-
- 
 
     res.json(rows);
   } catch (err) {
