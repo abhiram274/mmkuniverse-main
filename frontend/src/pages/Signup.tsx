@@ -21,6 +21,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -184,23 +185,29 @@ const Signup = () => {
                 <Button
                   type="button"
                   className="mt-2 bg-mmk-purple/70"
+                  disabled={isSendingOtp}
                   onClick={async () => {
+                    setIsSendingOtp(true);
                     try {
                       const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/send-otp", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: formData.email }),
                       });
+
                       const data = await res.json();
+
                       if (res.ok) toast("OTP sent");
                       else toast(data.error);
                     } catch (err) {
                       console.error(err);
                       toast("Failed to send OTP");
+                    } finally {
+                      setIsSendingOtp(false);
                     }
                   }}
                 >
-                  Send OTP
+                  {isSendingOtp ? "Sending OTP..." : "Send OTP"}
                 </Button>
 
               </div>
