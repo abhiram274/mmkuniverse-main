@@ -11,6 +11,6 @@ User-agent: facebookexternalhit
 Allow: /
 
 User-agent: *
-Allow: /
+Allow: / 
 
-Sitemap: https://mmkuniverse-main.vercel.app/sitemap.xml
+Sitemap: https://mmkuniverse-main.vercel.app/sitemap_new.xml
