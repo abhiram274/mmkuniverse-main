@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://mmkuniverse-main.vercel.app/sitemap.xml
+Sitemap: https://mmkuniverse-main.vercel.app/sitemap2.xml
