@@ -36,7 +36,7 @@ const AdminLogin = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/admin_login", {
+      const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/admin_login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
