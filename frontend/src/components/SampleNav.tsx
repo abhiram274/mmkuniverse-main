@@ -22,8 +22,8 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-8">
           <Link to="/programs" className="text-gray-300 hover:text-white transition">Programs</Link>
           <Link to="/events" className="text-gray-300 hover:text-white transition">Events</Link>
-          <Link to="/community" className="text-gray-300 hover:text-white transition">Community</Link>
-          <Link to="/freelance" className="text-gray-300 hover:text-white transition">Freelance</Link>
+          {/* <Link to="/community" className="text-gray-300 hover:text-white transition">Community</Link> */}
+          {/* <Link to="/freelance" className="text-gray-300 hover:text-white transition">Freelance</Link> */}
           <Link to="/about" className="text-gray-300 hover:text-white transition">About Us</Link>
           <Link to="/login" className="text-gray-300 hover:text-white transition">Login</Link>
           <Link to="/signup">
@@ -51,8 +51,8 @@ const Navbar = () => {
 
             <Link to="/programs" className="text-gray-300 hover:text-white transition py-2">Programs</Link>
             <Link to="/events" className="text-gray-300 hover:text-white transition py-2">Events</Link>
-            <Link to="/community" className="text-gray-300 hover:text-white transition py-2">Community</Link>
-            <Link to="/freelance" className="text-gray-300 hover:text-white transition py-2">Freelance</Link>
+            {/* <Link to="/community" className="text-gray-300 hover:text-white transition py-2">Community</Link> */}
+            {/* <Link to="/freelance" className="text-gray-300 hover:text-white transition py-2">Freelance</Link> */}
             <Link to="/about" className="text-gray-300 hover:text-white transition py-2">About Us</Link>
             <Link to="/login" className="text-gray-300 hover:text-white transition py-2">Login</Link>
             <Link to="/signup" className="py-2">
