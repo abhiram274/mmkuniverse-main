@@ -91,7 +91,7 @@ const ManageEvents = () => {
   //Fetch attendees
   const fetchAttendees = async (eventId: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}/attendees`);
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/attendees`);
       const data = await res.json();
       console.log("Fetched attendees:", data);
       
@@ -118,7 +118,7 @@ const ManageEvents = () => {
 
   const markAsParticipated = async (eventId: number, userId: string | null, guestEmail: string | null) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${eventId}/mark-participation`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/mark-participation`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -143,7 +143,7 @@ const ManageEvents = () => {
   //fetch events
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:5000/events"); // Corrected URL
+      const res = await fetch("https://mmkuniverse-main.onrender.com/events"); // Corrected URL
       const data = await res.json();
 
       // console.log("Fetched events:", data);
@@ -189,8 +189,8 @@ const ManageEvents = () => {
       }
 
       const endpoint = editingId
-        ? `http://localhost:5000/events/${editingId}` // Corrected endpoint for editing
-        : "http://localhost:5000/events"; // Corrected endpoint for creating
+        ? `https://mmkuniverse-main.onrender.com/events/${editingId}` // Corrected endpoint for editing
+        : "https://mmkuniverse-main.onrender.com/events"; // Corrected endpoint for creating
 
       const method = editingId ? "PUT" : "POST";
 
@@ -218,7 +218,7 @@ const ManageEvents = () => {
 
   const handleComplete = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${id}/complete`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${id}/complete`, {
         method: "PUT",
       });
       if (res.ok) {
@@ -266,7 +266,7 @@ const ManageEvents = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/events/${id}`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -606,7 +606,7 @@ const ManageEvents = () => {
                       <td className="px-4 py-2">
                         <Button
                           className="bg-yellow-500 text-xs px-3 py-1"
-                          onClick={() => window.open(`http://localhost:5000/events/${event.id}/export-excel`, "_blank")}
+                          onClick={() => window.open(`https://mmkuniverse-main.onrender.com/events/${event.id}/export-excel`, "_blank")}
                         >
                           Export Excel
                         </Button>
@@ -619,7 +619,7 @@ const ManageEvents = () => {
                             disabled={sendingType === 'joined'}
                             onClick={() => {
                               setSendingType('joined');
-                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=joined`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=joined`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())
@@ -638,7 +638,7 @@ const ManageEvents = () => {
                             disabled={sendingType === 'participated'}
                             onClick={() => {
                               setSendingType('participated');
-                              fetch(`http://localhost:5000/events/send-certificates/${event.id}?type=participated`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=participated`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())

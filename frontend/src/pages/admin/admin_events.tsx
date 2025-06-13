@@ -41,7 +41,7 @@ const AdminEvents = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:5000/events"); // Ensure this URL is correct
+      const res = await fetch("https://mmkuniverse-main.onrender.com/events"); // Ensure this URL is correct
       const data = await res.json();
       setEvents(data);
     } catch (err) {
@@ -79,7 +79,7 @@ const handleSubmit = async () => {
       data.append("image", formData.image);
     }
 
-    const res = await fetch("http://localhost:5000/events", {
+    const res = await fetch("https://mmkuniverse-main.onrender.com/events", {
       method: "POST",
       body: data,
     });

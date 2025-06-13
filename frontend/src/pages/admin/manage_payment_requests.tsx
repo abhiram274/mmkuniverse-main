@@ -23,7 +23,7 @@ const ManageEventPayments = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("http://localhost:5000/payments/payment-requests");
+      const res = await fetch("https://mmkuniverse-main.onrender.com/payments/payment-requests");
       const data = await res.json();
       setRequests(data);
     } catch (err) {
@@ -38,7 +38,7 @@ const ManageEventPayments = () => {
 
   const handleAction = async (requestId: number, action: "approve" | "reject") => {
     try {
-      const res = await fetch(`http://localhost:5000/payments/payment-requests/${requestId}/${action}`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/payments/payment-requests/${requestId}/${action}`, {
         method: "POST",
       });
 
@@ -95,7 +95,7 @@ const ManageEventPayments = () => {
                       <Button
                         variant="outline"
                         className="text-xs px-2 py-1"
-                        onClick={() => setSelectedImage(`http://localhost:5000/uploads/${req.payment_image_path}`)}
+                        onClick={() => setSelectedImage(`https://mmkuniverse-main.onrender.com/uploads/${req.payment_image_path}`)}
                       >
                         👁️ View
                       </Button>

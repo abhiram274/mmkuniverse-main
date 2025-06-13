@@ -95,7 +95,7 @@ const ManagePrograms = () => {
     //Fetch attendees
     const fetchAttendees = async (programId: number) => {
         try {
-            const res = await fetch(`http://localhost:5000/programs/${programId}/attendees`);
+            const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/${programId}/attendees`);
             const data = await res.json();
             console.log("Fetched attendees:", data);
 
@@ -121,7 +121,7 @@ const ManagePrograms = () => {
     //Mark as participated
     const markAsParticipated = async (programId: number, userId: string | null, guestEmail: string | null) => {
         try {
-            const res = await fetch(`http://localhost:5000/programs/${programId}/mark-participation`, {
+            const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/${programId}/mark-participation`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -149,7 +149,7 @@ const ManagePrograms = () => {
 
     const fetchPrograms = async () => {
         try {
-            const res = await fetch("http://localhost:5000/programs");
+            const res = await fetch("https://mmkuniverse-main.onrender.com/programs");
             const data = await res.json();
             setPrograms(data);
         } catch (err) {
@@ -179,8 +179,8 @@ const ManagePrograms = () => {
 
 
             const endpoint = editingId
-                ? `http://localhost:5000/programs/${editingId}`
-                : "http://localhost:5000/programs";
+                ? `https://mmkuniverse-main.onrender.com/programs/${editingId}`
+                : "https://mmkuniverse-main.onrender.com/programs";
 
             const method = editingId ? "PUT" : "POST";
 
@@ -252,7 +252,7 @@ const ManagePrograms = () => {
 
     const handleComplete = async (id: number) => {
         try {
-            const res = await fetch(`http://localhost:5000/programs/${id}/complete`, {
+            const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/${id}/complete`, {
                 method: "PUT",
             });
             if (res.ok) {
@@ -271,7 +271,7 @@ const ManagePrograms = () => {
 
     const handleDelete = async (id: number) => {
         try {
-            const res = await fetch(`http://localhost:5000/programs/${id}`, {
+            const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/${id}`, {
                 method: "DELETE",
             });
             if (res.ok) {
@@ -573,7 +573,7 @@ const ManagePrograms = () => {
                                             <td className="px-4 py-2">
                                                 <Button
                                                     className="bg-yellow-500 text-xs px-3 py-1"
-                                                    onClick={() => window.open(`http://localhost:5000/programs/${program.id}/export-excel`, "_blank")}
+                                                    onClick={() => window.open(`https://mmkuniverse-main.onrender.com/programs/${program.id}/export-excel`, "_blank")}
                                                 >
                                                     Export Excel
                                                 </Button>
@@ -589,7 +589,7 @@ const ManagePrograms = () => {
                             disabled={sendingType === 'joined'}
                             onClick={() => {
                               setSendingType('joined');
-                              fetch(`http://localhost:5000/programs/send-certificates/${program.id}?type=joined`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/programs/send-certificates/${program.id}?type=joined`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())
@@ -608,7 +608,7 @@ const ManagePrograms = () => {
                             disabled={sendingType === 'participated'}
                             onClick={() => {
                               setSendingType('participated');
-                              fetch(`http://localhost:5000/programs/send-certificates/${program.id}?type=participated`, {
+                              fetch(`https://mmkuniverse-main.onrender.com/programs/send-certificates/${program.id}?type=participated`, {
                                 method: "POST",
                               })
                                 .then((res) => res.json())
