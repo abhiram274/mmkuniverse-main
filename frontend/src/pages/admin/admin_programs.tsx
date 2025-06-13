@@ -58,7 +58,7 @@ const ManagePrograms = () => {
 
   const fetchPrograms = async () => {
     try {
-      const res = await fetch("http://localhost:5000/programs");
+      const res = await fetch("https://mmkuniverse-main.onrender.com/programs");
       const data = await res.json();
       setPrograms(data);
     } catch (err) {
@@ -83,8 +83,8 @@ const ManagePrograms = () => {
       });
 
       const endpoint = editingId
-        ? `http://localhost:5000/programs/${editingId}`
-        : "http://localhost:5000/programs";
+        ? `https://mmkuniverse-main.onrender.com/programs/${editingId}`
+        : "https://mmkuniverse-main.onrender.com/programs";
 
       const method = editingId ? "PUT" : "POST";
 
@@ -138,7 +138,7 @@ const ManagePrograms = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5000/programs/${id}`, {
+      const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
