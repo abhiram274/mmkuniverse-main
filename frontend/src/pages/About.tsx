@@ -90,7 +90,7 @@ const About = () => {
               <p className="mt-4 text-gray-300">
                 MMK Universe bridges this gap by fostering an ecosystem where learning is collaborative, knowledge is freely shared, and opportunities are abundant. Our goal is to help individuals not just learn, but truly thrive in their chosen fields through the power of community."
               </p>
-              <p className="mt-4 italic text-right">- Michael Johnson, Founder</p>
+              <p className="mt-4 italic text-right">- Mohith Kumar, Founder</p>
             </div>
           </div>
 
