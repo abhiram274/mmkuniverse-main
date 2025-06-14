@@ -7,7 +7,7 @@ require("dotenv").config();
 
 
 async function generateCertificate(name, eventName, description = "") {
-  const templatePath = path.join(__dirname, '../../template-certificate.pdf');
+  const templatePath = path.join(__dirname, '../template-certificate.pdf');
   const fileName = `certificates/${name.replace(/\s/g, "_")}_${Date.now()}.pdf`;
 
   if (!fs.existsSync('certificates')) {
