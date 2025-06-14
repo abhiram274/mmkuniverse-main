@@ -694,29 +694,29 @@ const ManageEvents = () => {
 
             </div>
 
-
-          {openDialog && selectedEvent && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-xl w-96 shadow-xl">
-      <h2 className="text-lg font-semibold mb-2">Send Certificate</h2>
-      <p className="text-sm mb-4">
-        You're sending to: <b>{certificateType}</b> for <b>{selectedEvent.title}</b>
+{openDialog && selectedEvent && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-zinc-900 text-zinc-100 p-6 rounded-2xl w-full max-w-md shadow-2xl border border-zinc-700">
+      <h2 className="text-xl font-semibold mb-4">Send Certificate</h2>
+      <p className="text-sm mb-6">
+        You're sending to: <span className="text-indigo-400 font-medium">{certificateType}</span> for{' '}
+        <span className="text-indigo-400 font-medium">{selectedEvent.title}</span>
       </p>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Description</label>
+      <div className="mb-5">
+        <label className="block text-sm font-medium mb-1">Certificate Description</label>
         <textarea
-          className="w-full border rounded p-2"
+          className="w-full p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter description for the certificate"
+          placeholder="e.g., For outstanding contribution and participation..."
         />
       </div>
 
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end space-x-3">
         <button
-          className="bg-gray-300 px-4 py-2 rounded"
+          className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 transition"
           onClick={() => {
             setOpenDialog(false);
             setDescription('');
@@ -728,7 +728,7 @@ const ManageEvents = () => {
         </button>
 
         <button
-          className="bg-purple-600 text-white px-4 py-2 rounded"
+          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
           onClick={() => {
             setSendingType(certificateType);
             setOpenDialog(false);
