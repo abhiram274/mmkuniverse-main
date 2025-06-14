@@ -1,7 +1,7 @@
 const fs = require('fs');
 // const PDFDocument = require('pdfkit');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
-
+const path = require('path');
 const nodemailer = require('nodemailer');
 require("dotenv").config();
 
