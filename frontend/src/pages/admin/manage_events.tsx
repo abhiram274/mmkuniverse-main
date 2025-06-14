@@ -49,7 +49,11 @@ const ManageEvents = () => {
   const [attendees, setAttendees] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
-    const [sendingType, setSendingType] = useState<null | 'joined' | 'participated'>(null);
+  const [sendingType, setSendingType] = useState<null | 'joined' | 'participated'>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [certificateType, setCertificateType] = useState<null | 'joined' | 'participated'>(null);
+  const [description, setDescription] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState(null); // 👈 store current event object
 
   // const [attendees, setAttendees] = useState([]);
   const [formData, setFormData] = useState({
@@ -94,17 +98,17 @@ const ManageEvents = () => {
       const res = await fetch(`https://mmkuniverse-main.onrender.com/events/${eventId}/attendees`);
       const data = await res.json();
       console.log("Fetched attendees:", data);
-      
 
-    const normalizedAttendees = (data.attendees || []).map(attendee => ({
-      ...attendee,
-      userId: attendee.user_id || null,
-      guestEmail: attendee.guest_email || null,
-    }));
+
+      const normalizedAttendees = (data.attendees || []).map(attendee => ({
+        ...attendee,
+        userId: attendee.user_id || null,
+        guestEmail: attendee.guest_email || null,
+      }));
 
 
       // setAttendees(data.attendees || []);
-        setAttendees(normalizedAttendees);
+      setAttendees(normalizedAttendees);
       setSelectedEventId(eventId);
       //setAttendees(data.attendees);
       setShowModal(true);
@@ -125,7 +129,7 @@ const ManageEvents = () => {
         },
         body: JSON.stringify({ userId, guestEmail })
       });
-      
+
 
       const data = await res.json();
 
@@ -613,44 +617,75 @@ const ManageEvents = () => {
                       </td>
 
 
-         <td className="px-4 py-2">
-                          <Button
-                            className="bg-purple-700 text-xs px-3 py-1"
-                            disabled={sendingType === 'joined'}
-                            onClick={() => {
-                              setSendingType('joined');
-                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=joined`, {
-                                method: "POST",
-                              })
-                                .then((res) => res.json())
-                                .then((data) => toast.success(data.message))
-                                .catch(() => toast.error("Failed to send certificates"))
-                                .finally(() => setSendingType(null));
-                            }}
-                          >
-                            {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
-                          </Button>
-                        </td>
+                  {/* 
+                     <td className="px-4 py-2">
+                        <Button
+                          className="bg-purple-700 text-xs px-3 py-1"
+                          disabled={sendingType === 'joined'}
+                          onClick={() => {
+                            setSendingType('joined');
+                            setOpenDialog(true);
+                            fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=joined`, {
+                              method: "POST",
+
+                            })
+                              .then((res) => res.json())
+                              .then((data) => toast.success(data.message))
+                              .catch(() => toast.error("Failed to send certificates"))
+                              .finally(() => setSendingType(null));
+                          }}
+                        >
+                          {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
+                        </Button>
+                      </td>
+
+                      <td className="px-4 py-2">
+                        <Button
+                          className="bg-indigo-700 text-xs px-3 py-1"
+                          disabled={sendingType === 'participated'}
+                          onClick={() => {
+                            setSendingType('participated');
+                            fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=participated`, {
+                              method: "POST",
+                            })
+                              .then((res) => res.json())
+                              .then((data) => toast.success(data.message))
+                              .catch(() => toast.error("Failed to send certificates"))
+                              .finally(() => setSendingType(null));
+                          }}
+                        >
+                          {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
+                        </Button>
+                      </td>
+                        */}
+
+
 
                         <td className="px-4 py-2">
-                          <Button
-                            className="bg-indigo-700 text-xs px-3 py-1"
-                            disabled={sendingType === 'participated'}
-                            onClick={() => {
-                              setSendingType('participated');
-                              fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${event.id}?type=participated`, {
-                                method: "POST",
-                              })
-                                .then((res) => res.json())
-                                .then((data) => toast.success(data.message))
-                                .catch(() => toast.error("Failed to send certificates"))
-                                .finally(() => setSendingType(null));
-                            }}
-                          >
-                            {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
-                          </Button>
-                        </td>
+  <Button
+    className="bg-purple-700 text-xs px-3 py-1"
+    onClick={() => {
+      setCertificateType('joined');
+      setSelectedEvent(event); // 👈 store selected event for modal use
+      setOpenDialog(true);
+    }}
+  >
+    Send to Joined
+  </Button>
+</td>
 
+<td className="px-4 py-2">
+  <Button
+    className="bg-indigo-700 text-xs px-3 py-1"
+    onClick={() => {
+      setCertificateType('participated');
+      setSelectedEvent(event); // 👈 store selected event
+      setOpenDialog(true);
+    }}
+  >
+    Send to Participants
+  </Button>
+</td>
 
                     </tr>
                   ))}
@@ -658,6 +693,74 @@ const ManageEvents = () => {
               </table>
 
             </div>
+
+
+          {openDialog && selectedEvent && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-96 shadow-xl">
+      <h2 className="text-lg font-semibold mb-2">Send Certificate</h2>
+      <p className="text-sm mb-4">
+        You're sending to: <b>{certificateType}</b> for <b>{selectedEvent.title}</b>
+      </p>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          className="w-full border rounded p-2"
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Enter description for the certificate"
+        />
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <button
+          className="bg-gray-300 px-4 py-2 rounded"
+          onClick={() => {
+            setOpenDialog(false);
+            setDescription('');
+            setCertificateType(null);
+            setSelectedEvent(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="bg-purple-600 text-white px-4 py-2 rounded"
+          onClick={() => {
+            setSendingType(certificateType);
+            setOpenDialog(false);
+
+            fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${selectedEvent.id}?type=${certificateType}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                description,
+                eventName: selectedEvent.title,
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => toast.success(data.message))
+              .catch(() => toast.error('Failed to send certificates'))
+              .finally(() => {
+                setSendingType(null);
+                setDescription('');
+                setCertificateType(null);
+                setSelectedEvent(null);
+              });
+          }}
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
 
             {/* Pagination Controls */}
             <div className="flex justify-end gap-2 mt-4">
