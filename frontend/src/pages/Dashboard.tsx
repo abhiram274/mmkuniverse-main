@@ -56,26 +56,26 @@ const Dashboard = () => {
     else if (path === "/dashboard") setActiveMenuItem("dashboard");
   }, [location.pathname]);
 
-  useEffect(() => {
-    const savedName = localStorage.getItem("admin_name");
-    if (savedName) setAdminName(savedName);
+  // useEffect(() => {
+  //   const savedName = localStorage.getItem("admin_name");
+  //   if (savedName) setAdminName(savedName);
 
-    axios
-      .get("https://mmkuniverse-main.onrender.com/api/auth/admin_session", { withCredentials: true })
-      .then((res) => {
-        if (res.data.loggedIn && res.data.admin?.name) {
-          setAdminName(res.data.admin.name);
-          localStorage.setItem("admin_name", res.data.admin.name);
-        } else {
-          setAdminName(null);
-          localStorage.removeItem("admin_name");
-        }
-      })
-      .catch(() => {
-        setAdminName(null);
-        localStorage.removeItem("admin_name");
-      });
-  }, []);
+  //   axios
+  //     .get("https://mmkuniverse-main.onrender.com/api/auth/admin_session", { withCredentials: true })
+  //     .then((res) => {
+  //       if (res.data.loggedIn && res.data.admin?.name) {
+  //         setAdminName(res.data.admin.name);
+  //         localStorage.setItem("admin_name", res.data.admin.name);
+  //       } else {
+  //         setAdminName(null);
+  //         localStorage.removeItem("admin_name");
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setAdminName(null);
+  //       localStorage.removeItem("admin_name");
+  //     });
+  // }, []);
 
   // const handleLogout = () => {
   //   axios
@@ -93,6 +93,8 @@ const Dashboard = () => {
     const handleLogout = () => {
   // Clear all user info from localStorage
   localStorage.removeItem("admin_token");  
+    localStorage.removeItem("admin_mail");  
+
   navigate("/admin_login");
 };
   return (

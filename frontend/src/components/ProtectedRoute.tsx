@@ -2,9 +2,9 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const adminId = localStorage.getItem("admin_id");
+  const adminMail = localStorage.getItem("admin_mail");
 
-  if (!adminId) {
+  if (!adminMail) {
     return <Navigate to="/admin_login" replace />;
   }
 
