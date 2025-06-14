@@ -182,33 +182,44 @@ const Signup = () => {
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </div>
-                <Button
-                  type="button"
-                  className="mt-2 bg-mmk-purple/70"
-                  disabled={isSendingOtp}
-                  onClick={async () => {
-                    setIsSendingOtp(true);
-                    try {
-                      const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/send-otp", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: formData.email }),
-                      });
+             <Button
+  type="button"
+  className="mt-2 bg-mmk-purple/70 flex items-center justify-center gap-2"
+  disabled={isSendingOtp}
+  onClick={async () => {
+    setIsSendingOtp(true);
+    try {
+      const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
 
-                      const data = await res.json();
+      const data = await res.json();
 
-                      if (res.ok) toast("OTP sent");
-                      else toast(data.error);
-                    } catch (err) {
-                      console.error(err);
-                      toast("Failed to send OTP");
-                    } finally {
-                      setIsSendingOtp(false);
-                    }
-                  }}
-                >
-                  {isSendingOtp ? "Sending OTP..." : "Send OTP"}
-                </Button>
+      if (res.ok) toast("OTP sent");
+      else toast(data.error || "Failed to send OTP");
+    } catch (err) {
+      console.error(err);
+      toast("Failed to send OTP");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  }}
+>
+  {isSendingOtp && (
+    <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v8z"
+      ></path>
+    </svg>
+  )}
+  {isSendingOtp ? "Sending OTP..." : "Send OTP"}
+</Button>
+
 
               </div>
 
