@@ -131,7 +131,8 @@ const Signup = () => {
                   className="bg-mmk-dark/60 border-white/10 focus:border-mmk-purple"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="john@example.com"
+                  placeholder="hello@example.com"
+                  disabled={isSendingOtp}
                 />
 
 
