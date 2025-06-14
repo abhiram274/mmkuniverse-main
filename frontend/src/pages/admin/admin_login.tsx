@@ -51,11 +51,12 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("admin_id", data.id);
-        
-        localStorage.setItem("admin_name", data.name);
+ localStorage.setItem("admin_token", data.token);
 
+        localStorage.setItem("admin_mail", data.email);
+        
         navigate("/dashboard");
+        
       } else {
         alert(data.error || data.message || "Login failed.");
       }

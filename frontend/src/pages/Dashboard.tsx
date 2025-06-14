@@ -77,19 +77,24 @@ const Dashboard = () => {
       });
   }, []);
 
-  const handleLogout = () => {
-    axios
-      .post("https://mmkuniverse-main.onrender.com/api/auth/admin_logout", {}, { withCredentials: true })
-      .then(() => {
-        localStorage.removeItem("admin_id");
-        localStorage.removeItem("admin_name");
-        navigate("/admin_login");
-      })
-      .catch(() => {
-        alert("Logout failed. Please try again.");
-      });
-  };
+  // const handleLogout = () => {
+  //   axios
+  //     .post("https://mmkuniverse-main.onrender.com/api/auth/admin_logout", {}, { withCredentials: true })
+  //     .then(() => {
+  //       localStorage.removeItem("admin_id");
+  //       localStorage.removeItem("admin_name");
+  //       navigate("/admin_login");
+  //     })
+  //     .catch(() => {
+  //       alert("Logout failed. Please try again.");
+  //     });
+  // };
 
+    const handleLogout = () => {
+  // Clear all user info from localStorage
+  localStorage.removeItem("admin_token");  
+  navigate("/admin_login");
+};
   return (
     <div className="min-h-screen flex bg-mmk-dark">
       {/* Sidebar */}
