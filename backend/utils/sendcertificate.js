@@ -1,28 +1,63 @@
 const fs = require('fs');
-const PDFDocument = require('pdfkit');
+// const PDFDocument = require('pdfkit');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+
 const nodemailer = require('nodemailer');
 require("dotenv").config();
 
-// 📄 Helper to create PDF certificate
-function generateCertificate(name, eventName) {
+
+async function generateCertificate(name, eventName, description = "") {
+  const templatePath = path.join(__dirname, '../../template-certificate.pdf');
   const fileName = `certificates/${name.replace(/\s/g, "_")}_${Date.now()}.pdf`;
 
   if (!fs.existsSync('certificates')) {
     fs.mkdirSync('certificates');
   }
 
-  const doc = new PDFDocument();
-  doc.pipe(fs.createWriteStream(fileName));
+  const existingPdfBytes = fs.readFileSync(templatePath);
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+  const pages = pdfDoc.getPages();
+  const firstPage = pages[0];
 
-  doc.fontSize(28).text('Certificate of Participation', { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(20).text(`This certifies that ${name}`, { align: 'center' });
-  doc.moveDown();
-  doc.text(`has successfully participated in "${eventName}"`, { align: 'center' });
-  doc.end();
+  const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+  const pageWidth = firstPage.getWidth();
+
+  // 🧑 Name on underline
+  const nameFontSize = 24;
+  const nameWidth = font.widthOfTextAtSize(name, nameFontSize);
+  const nameX = (pageWidth - nameWidth) / 2;
+  const nameY = 310; // Adjusted to fall on the underline
+
+  firstPage.drawText(name, {
+    x: nameX,
+    y: nameY,
+    size: nameFontSize,
+    font,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  // 📄 Description below name
+  const descFontSize = 14;
+  const descWidth = font.widthOfTextAtSize(description, descFontSize);
+  const descX = (pageWidth - descWidth) / 2;
+  const descY = nameY - 40; // Spaced below name
+
+  if (description) {
+    firstPage.drawText(description, {
+      x: descX,
+      y: descY,
+      size: descFontSize,
+      font,
+      color: rgb(0.15, 0.15, 0.15),
+    });
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(fileName, pdfBytes);
   return fileName;
 }
+
 
 // 📬 Helper to send email
 async function sendEmail(to, name, filePath) {
