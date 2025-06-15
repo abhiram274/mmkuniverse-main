@@ -61,13 +61,11 @@ async function generateCertificate(name, eventName, description = "") {
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  // 📄 Description below name
-  const descFontSize = 14;
-  const descWidth = font.widthOfTextAtSize(description, descFontSize);
-  const descX = (pageWidth - descWidth) / 2;
-  const descY = nameY - 40; // Spaced below name
+
 
 if (description) {
+    description = description.replace(/\n/g, ' '); // ✅ Clean up line breaks
+
   const descFontSize = 14;
   const maxWidth = 400;
   const lineHeight = 18;
