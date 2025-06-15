@@ -16,7 +16,7 @@ function wrapText(text, maxWidth, font, fontSize) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
     const testWidth = font.widthOfTextAtSize(testLine, fontSize);
 
-    if (testWidth < maxWidth) {
+    if (testWidth <= maxWidth) {
       currentLine = testLine;
     } else {
       if (currentLine) lines.push(currentLine);
@@ -27,8 +27,6 @@ function wrapText(text, maxWidth, font, fontSize) {
   if (currentLine) lines.push(currentLine);
   return lines;
 }
-
-
 
 
 
