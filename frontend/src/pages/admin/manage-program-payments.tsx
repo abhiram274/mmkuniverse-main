@@ -91,7 +91,7 @@ const ManageProgramPayments = () => {
                       <Button
                         variant="outline"
                         className="text-xs px-2 py-1"
-                        onClick={() => setSelectedImage(`https://mmkuniverse-main.onrender.com/uploads/${req.payment_image_path}`)}
+                        onClick={() => setSelectedImage(`https://res.cloudinary.com/dxf8n44lz/image/upload/${req.payment_image_path}`)}
                       >
                         👁️ View
                       </Button>
