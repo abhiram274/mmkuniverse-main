@@ -76,6 +76,13 @@ const ManagePrograms = () => {
     const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [sendingType, setSendingType] = useState<null | 'joined' | 'participated'>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [certificateType, setCertificateType] = useState<null | 'joined' | 'participated'>(null);
+  const [description, setDescription] = useState('');
+  const [selectedProgram, setSelectedProgram] = useState(null); // 👈 store current event object
+
+
+
 
     const [editingId, setEditingId] = useState<number | null>(null);
     const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -585,18 +592,12 @@ const ManagePrograms = () => {
 
   <td className="px-4 py-2">
                           <Button
-                            className="bg-purple-700 text-xs px-3 py-1"
-                            disabled={sendingType === 'joined'}
-                            onClick={() => {
-                              setSendingType('joined');
-                              fetch(`https://mmkuniverse-main.onrender.com/programs/send-certificates/${program.id}?type=joined`, {
-                                method: "POST",
-                              })
-                                .then((res) => res.json())
-                                .then((data) => toast.success(data.message))
-                                .catch(() => toast.error("Failed to send certificates"))
-                                .finally(() => setSendingType(null));
-                            }}
+     className="bg-purple-700 text-xs px-3 py-1"
+                          onClick={() => {
+                            setCertificateType('joined');
+                            setSelectedProgram(program); // 👈 store selected event for modal use
+                            setOpenDialog(true);
+                          }}
                           >
                             {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
                           </Button>
@@ -604,18 +605,12 @@ const ManagePrograms = () => {
 
                         <td className="px-4 py-2">
                           <Button
-                            className="bg-indigo-700 text-xs px-3 py-1"
-                            disabled={sendingType === 'participated'}
-                            onClick={() => {
-                              setSendingType('participated');
-                              fetch(`https://mmkuniverse-main.onrender.com/programs/send-certificates/${program.id}?type=participated`, {
-                                method: "POST",
-                              })
-                                .then((res) => res.json())
-                                .then((data) => toast.success(data.message))
-                                .catch(() => toast.error("Failed to send certificates"))
-                                .finally(() => setSendingType(null));
-                            }}
+                         className="bg-indigo-700 text-xs px-3 py-1"
+                          onClick={() => {
+                            setCertificateType('participated');
+                            setSelectedProgram(program); // 👈 store selected event
+                            setOpenDialog(true);
+                          }}
                           >
                             {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
                           </Button>
@@ -631,6 +626,79 @@ const ManagePrograms = () => {
                                 </tbody>
                             </table>
                         </div>
+
+
+            {openDialog && selectedProgram && (
+              <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-zinc-900 text-zinc-100 p-6 rounded-2xl w-full max-w-md shadow-2xl border border-zinc-700">
+                  <h2 className="text-xl font-semibold mb-4">Send Certificate</h2>
+                  <p className="text-sm mb-6">
+                    You're sending to: <span className="text-indigo-400 font-medium">{certificateType}</span> for{' '}
+                    <span className="text-indigo-400 font-medium">{selectedProgram.title}</span>
+                  </p>
+
+                  <div className="mb-5">
+                    <label className="block text-sm font-medium mb-1">Certificate Description</label>
+                    <textarea
+                      className="w-full p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g., For outstanding contribution and participation..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 transition"
+                      onClick={() => {
+                        setOpenDialog(false);
+                        setDescription('');
+                        setCertificateType(null);
+                        setSelectedProgram(null);
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
+                      onClick={() => {
+                        setSendingType(certificateType);
+                        setOpenDialog(false);
+
+                        fetch(`https://mmkuniverse-main.onrender.com/programs/send-certificates/${selectedProgram.id}?type=${certificateType}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            description,
+                            eventName: selectedProgram.title,
+                          }),
+                        })
+                          .then((res) => res.json())
+                          .then((data) => toast.success(data.message))
+                          .catch(() => toast.error('Failed to send certificates'))
+                          .finally(() => {
+                            setSendingType(null);
+                            setDescription('');
+                            setCertificateType(null);
+                            setSelectedProgram(null);
+                          });
+                      }}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+
+
+
+
+
 
                         <div className="flex justify-end gap-2 mt-4">
                             <Button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} className="bg-gray-600 px-3 py-1">Prev</Button>

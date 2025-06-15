@@ -531,6 +531,7 @@ router.get("/:programId/attendees", async (req, res) => {
 router.post("/send-certificates/:programId", async (req, res) => {
   const { programId } = req.params;
   const { type } = req.query; // 'joined' or 'participated'
+  const { description } = req.body;
 
   if (!['joined', 'participated'].includes(type)) {
     return res.status(400).json({ error: 'Invalid type. Use "joined" or "participated".' });
@@ -538,7 +539,7 @@ router.post("/send-certificates/:programId", async (req, res) => {
 
   try {
     // If 'participated', filter by participated=1; else get all attendees.
-    const participationCondition = type === 'participated' ? 'AND ea.participated = 1' : '';
+    const participationCondition = type === 'participated' ? 'AND pa.participated = 1' : '';
 
     const [attendees] = await db.query(`
       SELECT 
@@ -547,7 +548,7 @@ router.post("/send-certificates/:programId", async (req, res) => {
         p.title AS program_name
       FROM program_attendees pa
       LEFT JOIN users u ON u.user_id = pa.user_id
-      JOIN programs e ON p.id = pa.program_id
+      JOIN programs p ON p.id = pa.program_id
       WHERE pa.program_id = ?
       ${participationCondition}
     `, [programId]);
@@ -558,7 +559,9 @@ router.post("/send-certificates/:programId", async (req, res) => {
     }
 
     for (const attendee of attendees) {
-      const certPath = generateCertificate(attendee.name, attendee.program_name);
+      // const certPath = generateCertificate(attendee.name, attendee.program_name);
+            const certPath = await generateCertificate(attendee.name, attendee.program_name, description);
+
       await sendEmail(attendee.email, attendee.name, certPath);
     }
 

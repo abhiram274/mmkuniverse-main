@@ -617,7 +617,7 @@ const ManageEvents = () => {
                       </td>
 
 
-                  {/* 
+                      {/* 
                      <td className="px-4 py-2">
                         <Button
                           className="bg-purple-700 text-xs px-3 py-1"
@@ -661,31 +661,31 @@ const ManageEvents = () => {
 
 
 
-                        <td className="px-4 py-2">
-  <Button
-    className="bg-purple-700 text-xs px-3 py-1"
-    onClick={() => {
-      setCertificateType('joined');
-      setSelectedEvent(event); // 👈 store selected event for modal use
-      setOpenDialog(true);
-    }}
-  >
-    Send to Joined
-  </Button>
-</td>
+                      <td className="px-4 py-2">
+                        <Button
+                          className="bg-purple-700 text-xs px-3 py-1"
+                          onClick={() => {
+                            setCertificateType('joined');
+                            setSelectedEvent(event); // 👈 store selected event for modal use
+                            setOpenDialog(true);
+                          }}
+                        >
+                            {sendingType === 'joined' ? 'Sending...' : 'Send to Joined'}
+                        </Button>
+                      </td>
 
-<td className="px-4 py-2">
-  <Button
-    className="bg-indigo-700 text-xs px-3 py-1"
-    onClick={() => {
-      setCertificateType('participated');
-      setSelectedEvent(event); // 👈 store selected event
-      setOpenDialog(true);
-    }}
-  >
-    Send to Participants
-  </Button>
-</td>
+                      <td className="px-4 py-2">
+                        <Button
+                          className="bg-indigo-700 text-xs px-3 py-1"
+                          onClick={() => {
+                            setCertificateType('participated');
+                            setSelectedEvent(event); // 👈 store selected event
+                            setOpenDialog(true);
+                          }}
+                        >
+                            {sendingType === 'participated' ? 'Sending...' : 'Send to Participants'}
+                        </Button>
+                      </td>
 
                     </tr>
                   ))}
@@ -694,70 +694,70 @@ const ManageEvents = () => {
 
             </div>
 
-{openDialog && selectedEvent && (
-  <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-zinc-900 text-zinc-100 p-6 rounded-2xl w-full max-w-md shadow-2xl border border-zinc-700">
-      <h2 className="text-xl font-semibold mb-4">Send Certificate</h2>
-      <p className="text-sm mb-6">
-        You're sending to: <span className="text-indigo-400 font-medium">{certificateType}</span> for{' '}
-        <span className="text-indigo-400 font-medium">{selectedEvent.title}</span>
-      </p>
+            {openDialog && selectedEvent && (
+              <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-zinc-900 text-zinc-100 p-6 rounded-2xl w-full max-w-md shadow-2xl border border-zinc-700">
+                  <h2 className="text-xl font-semibold mb-4">Send Certificate</h2>
+                  <p className="text-sm mb-6">
+                    You're sending to: <span className="text-indigo-400 font-medium">{certificateType}</span> for{' '}
+                    <span className="text-indigo-400 font-medium">{selectedEvent.title}</span>
+                  </p>
 
-      <div className="mb-5">
-        <label className="block text-sm font-medium mb-1">Certificate Description</label>
-        <textarea
-          className="w-full p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g., For outstanding contribution and participation..."
-        />
-      </div>
+                  <div className="mb-5">
+                    <label className="block text-sm font-medium mb-1">Certificate Description</label>
+                    <textarea
+                      className="w-full p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g., For outstanding contribution and participation..."
+                    />
+                  </div>
 
-      <div className="flex justify-end space-x-3">
-        <button
-          className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 transition"
-          onClick={() => {
-            setOpenDialog(false);
-            setDescription('');
-            setCertificateType(null);
-            setSelectedEvent(null);
-          }}
-        >
-          Cancel
-        </button>
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 transition"
+                      onClick={() => {
+                        setOpenDialog(false);
+                        setDescription('');
+                        setCertificateType(null);
+                        setSelectedEvent(null);
+                      }}
+                    >
+                      Cancel
+                    </button>
 
-        <button
-          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
-          onClick={() => {
-            setSendingType(certificateType);
-            setOpenDialog(false);
+                    <button
+                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
+                      onClick={() => {
+                        setSendingType(certificateType);
+                        setOpenDialog(false);
 
-            fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${selectedEvent.id}?type=${certificateType}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                description,
-                eventName: selectedEvent.title,
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => toast.success(data.message))
-              .catch(() => toast.error('Failed to send certificates'))
-              .finally(() => {
-                setSendingType(null);
-                setDescription('');
-                setCertificateType(null);
-                setSelectedEvent(null);
-              });
-          }}
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                        fetch(`https://mmkuniverse-main.onrender.com/events/send-certificates/${selectedEvent.id}?type=${certificateType}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            description,
+                            eventName: selectedEvent.title,
+                          }),
+                        })
+                          .then((res) => res.json())
+                          .then((data) => toast.success(data.message))
+                          .catch(() => toast.error('Failed to send certificates'))
+                          .finally(() => {
+                            setSendingType(null);
+                            setDescription('');
+                            setCertificateType(null);
+                            setSelectedEvent(null);
+                          });
+                      }}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
 
 
