@@ -6,6 +6,32 @@ const nodemailer = require('nodemailer');
 require("dotenv").config();
 
 
+// 👇 Helper to wrap long description text into lines
+function wrapText(text, maxWidth, font, fontSize) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+    if (testWidth < maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+
+  if (currentLine) lines.push(currentLine);
+  return lines;
+}
+
+
+
+
+
 async function generateCertificate(name, eventName, description = "") {
   const templatePath = path.join(__dirname, '../template-certificate.pdf');
   const fileName = `certificates/${name.replace(/\s/g, "_")}_${Date.now()}.pdf`;
@@ -44,16 +70,19 @@ async function generateCertificate(name, eventName, description = "") {
   const descY = nameY - 40; // Spaced below name
 
 if (description) {
-  const lines = description.split('\n');
+  const descFontSize = 14;
+  const maxWidth = 400;
   const lineHeight = 18;
-  let currentY = descY;
 
-  for (const line of lines) {
-    const lineWidth = font.widthOfTextAtSize(line, descFontSize);
-    const lineX = (pageWidth - lineWidth) / 2;
+  const wrappedLines = wrapText(description, maxWidth, font, descFontSize);
+  let currentY = nameY - 40;
+
+  for (const line of wrappedLines) {
+    const textWidth = font.widthOfTextAtSize(line, descFontSize);
+    const textX = (pageWidth - textWidth) / 2;
 
     firstPage.drawText(line, {
-      x: lineX,
+      x: textX,
       y: currentY,
       size: descFontSize,
       font,
