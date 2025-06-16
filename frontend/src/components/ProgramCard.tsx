@@ -132,7 +132,7 @@ const ProgramCard = ({
 
 
         <div className="flex items-center justify-between mt-auto">
-          <span className="text-lg font-bold">Price: {isFree ? "Free" : price}</span>
+          <span className="text-lg font-bold">₹ {isFree ? "Free" : price}</span>
           <div className="flex flex-col items-end">
             <div className="flex items-center gap-1 text-gray-400">
               <Users className="h-4 w-4" />
