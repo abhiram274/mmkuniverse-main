@@ -96,7 +96,7 @@ const Events = () => {
           if (isNaN(userId)) userId = null;
         }
 
-        const url = userId ? `https://mmkuniverse-main.onrender.com/events/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/events/non-complete";
+        const url = userId ? `https://mmkuniverse-main.onrender.com/events/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/events/non-complete";
         const res = await axios.get(url);
 
         const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
