@@ -303,18 +303,17 @@ const Programs = () => {
                 {filteredPrograms.map((program) => (
                   <div key={program.id}>
                     <ProgramCard
-                      {...program}
-                      onEnroll={() => handleEnroll(program.id, program.title)}
-                      isCertified={Boolean(program.isCertified)}
-                      isFree={Boolean(program.isFree)}
-                      isLive={Boolean(program.isLive)}
-                      // isEnrolled={Boolean(program.isEnrolled)}
-                      disabled={program.isEnrolled ||
-                        new Date() > new Date(program.end_date) || // after event end
-                        new Date() < new Date(program.start_date) || // before event start
-                        program.attendees >= program.attendance_limit // attendee limit reached
-                      }
-
+                    location={""} {...program}
+                    onEnroll={() => handleEnroll(program.id, program.title)}
+                    isCertified={Boolean(program.isCertified)}
+                    isFree={Boolean(program.isFree)}
+                    isLive={Boolean(program.isLive)}
+                    // isEnrolled={Boolean(program.isEnrolled)}
+                    disabled={program.isEnrolled ||
+                      new Date() > new Date(program.end_date) || // after event end
+                      new Date() < new Date(program.start_date) || // before event start
+                      program.attendees >= program.attendance_limit // attendee limit reached
+                    }
                     />
 
                   </div>

@@ -71,6 +71,7 @@ const ProgramCard = ({
   // - user is already enrolled OR
   // - not within registration period
   const isButtonDisabled = disabled || isEnrolled || !isWithinRegistration;
+  console.log("Start Date:", startDate, "End Date:", endDate);
 
   return (
     <div className="glass-card overflow-hidden hover:border-mmk-purple/60 group h-full flex flex-col">
