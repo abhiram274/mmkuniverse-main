@@ -28,7 +28,12 @@ interface Program {
   attendance_limit: number;
 }
 
+const formatDateDisplay = (isoString) => {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+};
 const Programs = () => {
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [filters, setFilters] = useState({
@@ -303,20 +308,22 @@ const Programs = () => {
                 {filteredPrograms.map((program) => (
                   <div key={program.id}>
                     <ProgramCard
-                    location={""} {...program}
-                    startDate={program.start_date}
-  endDate={program.end_date}
- 
-                    onEnroll={() => handleEnroll(program.id, program.title)}
-                    isCertified={Boolean(program.isCertified)}
-                    isFree={Boolean(program.isFree)}
-                    isLive={Boolean(program.isLive)}
-                    // isEnrolled={Boolean(program.isEnrolled)}
-                    disabled={program.isEnrolled ||
-                      new Date() > new Date(program.end_date) || // after event end
-                      new Date() < new Date(program.start_date) || // before event start
-                      program.attendees >= program.attendance_limit // attendee limit reached
-                    }
+                      location={""} {...program}
+                      // startDate={program.start_date}
+                      // endDate={program.end_date}
+                      startDate={formatDateDisplay(program.start_date)}
+                      endDate={formatDateDisplay(program.end_date)}
+
+                      onEnroll={() => handleEnroll(program.id, program.title)}
+                      isCertified={Boolean(program.isCertified)}
+                      isFree={Boolean(program.isFree)}
+                      isLive={Boolean(program.isLive)}
+                      // isEnrolled={Boolean(program.isEnrolled)}
+                      disabled={program.isEnrolled ||
+                        new Date() > new Date(program.end_date) || // after event end
+                        new Date() < new Date(program.start_date) || // before event start
+                        program.attendees >= program.attendance_limit // attendee limit reached
+                      }
                     />
 
                   </div>

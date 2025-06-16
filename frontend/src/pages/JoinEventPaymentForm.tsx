@@ -28,6 +28,7 @@ const JoinEventPaymentForm = () => {
   const [qrImageUrl, setQrImageUrl] = useState("");
 
   useEffect(() => {
+     window.scrollTo(0, 0);
     const urlParams = new URLSearchParams(window.location.search);
 
     const storedUserId = localStorage.getItem("MMK_U_user_id") || "";

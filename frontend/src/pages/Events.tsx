@@ -182,7 +182,9 @@ const Events = () => {
 
     try {
       const res = await fetch(
-        `https://mmkuniverse-main.onrender.com/events/check-attendance?userId=${userId}&eventId=${eventId}`
+        // `https://mmkuniverse-main.onrender.com/events/check-attendance?userId=${userId}&eventId=${eventId}`
+          `https://mmkuniverse-main.onrender.com/events/check-attendance/${userId}/${eventId}`
+
       );
       const data = await res.json();
 

@@ -27,6 +27,7 @@ const JoinProgramPaymentForm = () => {
   
 
   useEffect(() => {
+     window.scrollTo(0, 0);
     const storedUserId = localStorage.getItem("MMK_U_user_id") || "";
     const storedName = localStorage.getItem("MMK_U_name") || "";
     const storedEmail = localStorage.getItem("MMK_U_email") || "";

@@ -294,8 +294,8 @@ router.get('/user-events/:userId', async (req, res) => {
 
 
 // In routes/events.js or a new route file
-router.get("/check-attendance", async (req, res) => {
-  const { userId, eventId } = req.query;
+router.get("/check-attendance/:userId/:eventId", async (req, res) => {
+  const { userId, eventId } = req.params;
 
   if (!userId || !eventId) {
     return res.status(400).json({ error: "Missing userId or eventId" });
