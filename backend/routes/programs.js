@@ -96,7 +96,7 @@ router.get("/non-complete", async (req, res) => {
       // Add isEnrolled field to each event
       programs = programs.map(program => ({
         ...program,
-        isEnrolled: enrolledProgramIds.has(programs.id)
+        isEnrolled: enrolledProgramIds.has(program.id)
       }));
     } else {
       // If user_id not provided, set all to false
