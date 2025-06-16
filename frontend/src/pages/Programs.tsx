@@ -304,6 +304,9 @@ const Programs = () => {
                   <div key={program.id}>
                     <ProgramCard
                     location={""} {...program}
+                    startDate={program.start_date}
+  endDate={program.end_date}
+ 
                     onEnroll={() => handleEnroll(program.id, program.title)}
                     isCertified={Boolean(program.isCertified)}
                     isFree={Boolean(program.isFree)}
