@@ -124,9 +124,6 @@ router.get("/non-complete", async (req, res) => {
 
 
 
-
-
-
 //Get Specifi Event
 router.get("/:id", async (req, res) => {
   const { id } = req.params;

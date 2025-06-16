@@ -61,7 +61,7 @@ const Programs = () => {
         }
 
         // Pass user_id as query param if available
-        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${userId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
+        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
         const res = await axios.get(url);
 
         const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
@@ -323,10 +323,11 @@ const Programs = () => {
                       isFree={Boolean(program.isFree)}
                       isLive={Boolean(program.isLive)}
                       // isEnrolled={Boolean(program.isEnrolled)}
-                      disabled={program.isEnrolled ||
-                        new Date() > new Date(program.end_date) || // after event end
-                        new Date() < new Date(program.start_date) || // before event start
-                        program.attendees >= program.attendance_limit // attendee limit reached
+                      disabled={
+                        program.isEnrolled ||
+                        new Date() > new Date(program.end_date) ||  // after event end
+                        new Date() < new Date(program.start_date) ||  // before event start
+                        program.attendees >= program.attendance_limit  // attendee limit reached
                       }
                     />
 

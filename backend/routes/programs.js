@@ -68,16 +68,50 @@ router.get("/", async (req, res) => {
 
 
 // Get all *non-completed* programs
-router.get("/non-complete", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM programs WHERE completed = FALSE");
+// router.get("/non-complete", async (req, res) => {
+//   try {
+//     const [rows] = await db.query("SELECT * FROM programs WHERE completed = FALSE");
     
-    res.json(rows);
+//     res.json(rows);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+
+router.get("/non-complete", async (req, res) => {
+  const { user_id } = req.query;
+
+  try {
+    let [programs] = await db.query("SELECT * FROM programs WHERE completed = FALSE ORDER BY id DESC");
+
+    if (user_id) {
+      // Get user's enrolled events
+      const [enrollments] = await db.query(
+        `SELECT program_id FROM program_attendees WHERE user_id = ?`,
+        [user_id]
+      );
+      const enrolledProgramIds = new Set(enrollments.map(p => p.program_id));
+
+      // Add isEnrolled field to each event
+      programs = programs.map(program => ({
+        ...program,
+        isEnrolled: enrolledProgramIds.has(programs.id)
+      }));
+    } else {
+      // If user_id not provided, set all to false
+      programs = programs.map(program => ({
+        ...program,
+        isEnrolled: false
+      }));
+    }
+
+    res.json(programs);
   } catch (err) {
+    console.error("DB Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 
 
 
