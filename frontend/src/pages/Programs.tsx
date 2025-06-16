@@ -158,7 +158,11 @@ const Programs = () => {
     }
 
     try {
-      const res = await fetch(`https://mmkuniverse-main.onrender.com/programs/check-attendance?userId=${userId}&programId=${programId}`);
+      const res = await fetch(
+        // `https://mmkuniverse-main.onrender.com/programs/check-attendance?userId=${userId}&programId=${programId}`
+                  `https://mmkuniverse-main.onrender.com/programs/check-attendance/${userId}/${programId}`
+        
+      );
       //   method: "POST",
       //   headers: {
       //     "Content-Type": "application/json"

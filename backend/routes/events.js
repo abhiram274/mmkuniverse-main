@@ -73,18 +73,58 @@ router.get("/", async (req, res) => {
 
 
 // Get all *non-completed* events
+// router.get("/non-complete", async (req, res) => {
+//   try {
+//     const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE ORDER BY id DESC");
+
+
+//     res.json(rows);
+//   } catch (err) {
+//     console.error("DB Error:", err); // 👈 log the error
+
+//     res.status(500).json({ error: err.message + "ha" });
+//   }
+// });
+
+
 router.get("/non-complete", async (req, res) => {
+  const { user_id } = req.query;
+
   try {
-    const [rows] = await db.query("SELECT * FROM events WHERE completed = FALSE ORDER BY id DESC");
+    let [events] = await db.query("SELECT * FROM events WHERE completed = FALSE ORDER BY id DESC");
 
+    if (user_id) {
+      // Get user's enrolled events
+      const [enrollments] = await db.query(
+        `SELECT event_id FROM event_attendees WHERE user_id = ?`,
+        [user_id]
+      );
+      const enrolledEventIds = new Set(enrollments.map(e => e.event_id));
 
-    res.json(rows);
+      // Add isEnrolled field to each event
+      events = events.map(event => ({
+        ...event,
+        isEnrolled: enrolledEventIds.has(event.id)
+      }));
+    } else {
+      // If user_id not provided, set all to false
+      events = events.map(event => ({
+        ...event,
+        isEnrolled: false
+      }));
+    }
+
+    res.json(events);
   } catch (err) {
-    console.error("DB Error:", err); // 👈 log the error
-
-    res.status(500).json({ error: err.message + "ha" });
+    console.error("DB Error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
+
+
+
+
+
 
 
 //Get Specifi Event

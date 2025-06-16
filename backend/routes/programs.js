@@ -185,8 +185,8 @@ router.post("/",
 
 
 // In routes/events.js or a new route file
-router.get("/check-attendance", async (req, res) => {
-  const { userId, programId } = req.query;
+router.get("/check-attendance/:userId/:programId", async (req, res) => {
+  const { userId, programId } = req.params;
 
   if (!userId || !programId) {
     return res.status(400).json({ error: "Missing userId or programId" });
