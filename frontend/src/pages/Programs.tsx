@@ -324,7 +324,7 @@ const Programs = () => {
                       isLive={Boolean(program.isLive)}
                       // isEnrolled={Boolean(program.isEnrolled)}
                       disabled={
-                        program.isEnrolled ||
+                         program.isEnrolled ||
                         new Date() > new Date(program.end_date) ||  // after event end
                         new Date() < new Date(program.start_date) ||  // before event start
                         program.attendees >= program.attendance_limit  // attendee limit reached

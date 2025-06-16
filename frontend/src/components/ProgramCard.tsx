@@ -156,7 +156,7 @@ const ProgramCard = ({
             <Button
               className="bg-mmk-purple hover:bg-mmk-purple/90 text-white"
               onClick={() => onEnroll(id, title)}
-            // disabled={isButtonDisabled}
+            disabled={isButtonDisabled}
             >
               {isEnrolled ? "Enrolled" : isWithinRegistration ? "Enroll Now" : "Registration Closed"}
             </Button>
