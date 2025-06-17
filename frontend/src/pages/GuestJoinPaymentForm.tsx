@@ -70,6 +70,36 @@ const GuestJoinPaymentForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+const checkAlreadyJoined = async () => {
+  try {
+    const res = await fetch(
+      `https://mmkuniverse-main.onrender.com/payments/${formData.eventId}/check-guest/${encodeURIComponent(formData.guest_email)}`
+    );
+
+    const data = await res.json();
+
+    if (data.status === "pending") {
+      toast.error("You have already submitted a request. Awaiting approval.");
+      return true;
+    }
+
+    if (data.status === "joined") {
+      toast.error("You have already joined this event.");
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    toast.error("Error checking existing status");
+    return true; // To be safe, block submission
+  }
+};
+
+
+
+
+
+
   const handleSubmit = async () => {
     if (!formData.guest_name || !formData.guest_email || !formData.transactionId) {
       toast.error("Please fill all fields.");
@@ -80,6 +110,9 @@ const GuestJoinPaymentForm = () => {
       toast.error("Please upload a payment screenshot.");
       return;
     }
+
+  const alreadyExists = await checkAlreadyJoined();
+  if (alreadyExists) return;
 
     const submissionData = new FormData();
     submissionData.append("guest_name", formData.guest_name);

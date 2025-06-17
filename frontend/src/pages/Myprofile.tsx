@@ -122,10 +122,12 @@ const MyProfile = () => {
         return;
       }
       const data = await res.json();
+      const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
+
       const withImages = data.map((item: Event) => ({
         ...item,
         // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-        imageUrl: item.image || null,
+  imageUrl: item.image ? baseCloudinaryURL + item.image : null,
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
       setJoinedEvents(withImages);
@@ -141,11 +143,13 @@ const MyProfile = () => {
         return;
       }
       const data = await res.json();
+      const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
+
       const withImages = data.map((item: Event) => ({
         ...item,
 
         // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-        imageUrl: item.image || null,
+  imageUrl: item.image ? baseCloudinaryURL + item.image : null,
 
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
@@ -298,6 +302,7 @@ const MyProfile = () => {
           {item.imageUrl && (
             <div className="w-full h-40 overflow-hidden">
               <img
+                // src={item.imageUrl || "/default-event.png"}
                 src={item.imageUrl}
                 alt={item.title}
                 className="w-full h-full object-cover"

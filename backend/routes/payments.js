@@ -331,6 +331,38 @@ if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
 
 
 
+// Check guest email status for an event
+router.get("/:id/check-guest/:email", async (req, res) => {
+  const event_id = req.params.id;
+  const guest_email = req.params.email;
+
+  try {
+    const [pending] = await db.query(
+      "SELECT id FROM event_payment_requests WHERE event_id = ? AND guest_email = ? AND status = 'pending'",
+      [event_id, guest_email]
+    );
+
+    if (pending.length > 0) {
+      return res.json({ status: "You are already in pending list" });
+    }
+
+    const [joined] = await db.query(
+      "SELECT id FROM event_attendees WHERE event_id = ? AND guest_email = ?",
+      [event_id, guest_email]
+    );
+
+    if (joined.length > 0) {
+      return res.json({ status: "You have already joined" });
+    }
+
+    return res.json({ status: "new" });
+  } catch (err) {
+    console.error("Error checking guest:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 
 router.post("/:id/guest-verify-payment", upload.single("paymentImage"), async (req, res) => {
