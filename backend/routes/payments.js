@@ -53,7 +53,7 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
   const { userId, name, email, transactionId } = req.body;
   const eventId = req.params.id;
   const paymentImage = req.file;
-  
+
   if (!userId || !transactionId || !eventId || !paymentImage) {
     return res.status(400).json({ error: "Missing required fields" });
   }
@@ -67,7 +67,7 @@ router.post("/:id/verify-payment", upload.single("paymentImage"), async (req, re
     // Check if this user has already requested
     const [existingRequest] = await db.query(
       "SELECT * FROM event_payment_requests WHERE user_id = ? AND user_name=? AND user_mail =? AND event_id = ? AND status = 'pending'",
-      [userId, name, email,eventId]
+      [userId, name, email, eventId]
     );
 
     if (existingRequest.length > 0) {
@@ -215,7 +215,7 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
         "SELECT * FROM event_attendees WHERE guest_email = ? AND event_id = ?",
         [guest_email, event_id]
       );
-    } 
+    }
     else {
       [existing] = await db.query(
         "SELECT * FROM event_attendees WHERE user_id = ? AND event_id = ?",
@@ -228,7 +228,7 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
     }
 
 
-    
+
     // 3. Approve and insert into event_attendees
     if (submission_type === "guest") {
       await db.query(
@@ -236,12 +236,12 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
          VALUES (?, ?, ?, ?)`,
         [event_id, transaction_id, guest_name, guest_email]
       );
-    } 
+    }
     else {
       await db.query(
         `INSERT INTO event_attendees (user_id, user_name, user_mail, event_id, transaction_id)
          VALUES (?, ?, ?,  ?, ?)`,
-        [user_id, user_name, user_mail,  event_id, transaction_id]
+        [user_id, user_name, user_mail, event_id, transaction_id]
       );
     }
 
@@ -260,21 +260,21 @@ router.post("/payment-requests/:id/approve", async (req, res) => {
     );
 
     // 6. Delete uploaded image
-if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
-  try {
-    // Extract public_id from the full URL
-    const urlParts = payment_image_path.split('/');
-    const fileNameWithExt = urlParts[urlParts.length - 1]; // e.g., abc123xyz.jpg
-    const folder = urlParts[urlParts.length - 2];           // e.g., my-app-uploads
+    if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
+      try {
+        // Extract public_id from the full URL
+        const urlParts = payment_image_path.split('/');
+        const fileNameWithExt = urlParts[urlParts.length - 1]; // e.g., abc123xyz.jpg
+        const folder = urlParts[urlParts.length - 2];           // e.g., my-app-uploads
 
-    const public_id = `${folder}/${fileNameWithExt.split('.')[0]}`; // remove extension
+        const public_id = `${folder}/${fileNameWithExt.split('.')[0]}`; // remove extension
 
-    await cloudinary.uploader.destroy(public_id);
-    console.log("🗑️ Cloudinary image deleted:", public_id);
-  } catch (err) {
-    console.error("Failed to delete Cloudinary image:", err);
-  }
-}
+        await cloudinary.uploader.destroy(public_id);
+        console.log("🗑️ Cloudinary image deleted:", public_id);
+      } catch (err) {
+        console.error("Failed to delete Cloudinary image:", err);
+      }
+    }
 
 
 
@@ -296,13 +296,13 @@ if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
 
 
     if (!email) {
-  console.error("❌ Email address is missing, cannot send confirmation");
-  return res.status(500).json({ error: "Missing recipient email" });
-}
+      console.error("❌ Email address is missing, cannot send confirmation");
+      return res.status(500).json({ error: "Missing recipient email" });
+    }
     await sendConfirmationEmail(email, event_title);
 
 
-  
+
 
 
     res.json({ message: "Payment approved and user added to event" });
@@ -326,26 +326,31 @@ router.post("/payment-requests/:id/reject", async (req, res) => {
 
     await db.query("UPDATE event_payment_requests SET status = 'rejected' WHERE id = ?", [id]);
 
-    // Delete image
-      // 6. Delete uploaded image
-// if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
-const payment_image_path = request.payment_image_path;
+    // Destructure fields from DB record
+    const {
+      submission_type,
+      guest_email,
+      user_id,
+      event_id,
+      payment_image_path
+    } = request;
 
-if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
-  try {
-    // Extract public_id from the full URL
-    const urlParts = payment_image_path.split('/');
-    const fileNameWithExt = urlParts[urlParts.length - 1]; // e.g., abc123xyz.jpg
-    const folder = urlParts[urlParts.length - 2];           // e.g., my-app-uploads
+    // 6. Delete uploaded image
+    if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
+      try {
+        // Extract public_id from the full URL
+        const urlParts = payment_image_path.split('/');
+        const fileNameWithExt = urlParts[urlParts.length - 1]; // e.g., abc123xyz.jpg
+        const folder = urlParts[urlParts.length - 2];           // e.g., my-app-uploads
 
-    const public_id = `${folder}/${fileNameWithExt.split('.')[0]}`; // remove extension
+        const public_id = `${folder}/${fileNameWithExt.split('.')[0]}`; // remove extension
 
-    await cloudinary.uploader.destroy(public_id);
-    console.log("🗑️ Cloudinary image deleted:", public_id);
-  } catch (err) {
-    console.error("Failed to delete Cloudinary image:", err);
-  }
-}
+        await cloudinary.uploader.destroy(public_id);
+        console.log("🗑️ Cloudinary image deleted:", public_id);
+      } catch (err) {
+        console.error("Failed to delete Cloudinary image:", err);
+      }
+    }
 
 
     // 7. Send confirmation email
@@ -360,9 +365,9 @@ if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
     event_title = event?.title;
     console.log("📨 Sending email to:", email, "for event:", event_title);
     if (!email) {
-  console.error("❌ Email address is missing, cannot send confirmation");
-  return res.status(500).json({ error: "Missing recipient email" });
-}
+      console.error("❌ Email address is missing, cannot send confirmation");
+      return res.status(500).json({ error: "Missing recipient email" });
+    }
     await sendRejectionEmail(email, event_title);
 
 
@@ -451,7 +456,7 @@ router.post("/:id/guest-verify-payment", upload.single("paymentImage"), async (r
        VALUES (?, ?, ?, ?, ?, 'pending','guest')`,
       [event_id, transaction_id, paymentImage.filename, guest_name, guest_email]
     );
-    
+
 
     res.status(200).json({ message: "Guest request submitted. Awaiting approval." });
   } catch (err) {
