@@ -61,7 +61,6 @@ const formatDateDisplay = (isoString) => {
   return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
 };
 
-
 const MyProfile = () => {
 
   const [user, setUser] = useState<User | null>(null);
@@ -104,7 +103,7 @@ const MyProfile = () => {
   const formRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!userId) return;
-
+     
     const fetchUserInfo = async () => {
       const res = await fetch(`https://mmkuniverse-main.onrender.com/events/users/${userId}`);
       if (!res.ok) {
@@ -143,13 +142,12 @@ const MyProfile = () => {
         return;
       }
       const data = await res.json();
-      const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
+      // const baseCloudinaryURL = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
 
       const withImages = data.map((item: Event) => ({
         ...item,
-
         // imageUrl: item.image ? `https://mmkuniverse-main.onrender.com/uploads/${item.image}` : null,
-  imageUrl: item.image ? baseCloudinaryURL + item.image : null,
+        imageUrl: item.image || null,
 
         completed: String(item.completed) === "true" || String(item.completed) === "1",
       }));
@@ -315,7 +313,7 @@ const MyProfile = () => {
           <CardContent className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <Calendar className="h-4 w-4 text-mmk-purple" />
-              {item.date}
+              {formatDateDisplay(item.date)}
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <Clock className="h-4 w-4 text-mmk-amber" />

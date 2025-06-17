@@ -65,9 +65,44 @@ const GuestProgramJoinPaymentForm = () => {
 
   }, []);
 
+
+
+
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+
+
+  const checkAlreadyJoined = async () => {
+    try {
+      const res = await fetch(
+        `https://mmkuniverse-main.onrender.com/program-payments/${formData.programId}/check-guest/${encodeURIComponent(formData.guest_email)}`
+      );
+  
+      const data = await res.json();
+  
+      if (data.status === "pending") {
+        toast.error("You have already submitted a request. Awaiting approval.");
+        return true;
+      }
+  
+      if (data.status === "joined") {
+        toast.error("You have already joined this event.");
+        return true;
+      }
+  
+      return false;
+    } catch (err) {
+      toast.error("Error checking existing status");
+      return true; // To be safe, block submission
+    }
+  };
+  
+
+
 
   const handleSubmit = async () => {
     if (!formData.guest_name || !formData.guest_email || !formData.transactionId) {
@@ -79,6 +114,10 @@ const GuestProgramJoinPaymentForm = () => {
       toast.error("Please upload a payment screenshot.");
       return;
     }
+
+ const alreadyExists = await checkAlreadyJoined();
+  if (alreadyExists) return;
+
 
     const submissionData = new FormData();
     submissionData.append("guest_name", formData.guest_name);
@@ -108,6 +147,8 @@ const GuestProgramJoinPaymentForm = () => {
       toast.error("Submission failed.");
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white pt-20">
