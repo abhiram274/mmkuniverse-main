@@ -328,6 +328,9 @@ router.post("/payment-requests/:id/reject", async (req, res) => {
 
     // Delete image
       // 6. Delete uploaded image
+// if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
+const payment_image_path = request.payment_image_path;
+
 if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
   try {
     // Extract public_id from the full URL

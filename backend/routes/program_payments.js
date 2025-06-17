@@ -297,8 +297,11 @@ router.post("/payment-requests/:id/reject", async (req, res) => {
     await db.query("UPDATE program_payment_requests SET status = 'rejected' WHERE id = ?", [id]);
 
     // Delete image
+// if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
+const payment_image_path = request.payment_image_path;
+
 if (payment_image_path && payment_image_path.includes("cloudinary.com")) {
-  try {
+try {
     // Extract public_id from the full URL
     const urlParts = payment_image_path.split('/');
     const fileNameWithExt = urlParts[urlParts.length - 1]; // e.g., abc123xyz.jpg
