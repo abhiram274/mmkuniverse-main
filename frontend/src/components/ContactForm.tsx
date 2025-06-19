@@ -50,7 +50,7 @@ const ContactForm = () => {
 
       await emailjs.send(
         'service_coewwii',
-        'template_a5l67ic',
+        'template_dw43m68',
         templateParams,
         'sVnZFKgronV-w46qG'
       );
