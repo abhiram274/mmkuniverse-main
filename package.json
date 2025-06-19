@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "bcryptjs": "^3.0.2",
     "connect-redis": "^8.1.0",
+    "emailjs": "^4.0.3",
     "exceljs": "^4.4.0",
     "express-fileupload": "^1.5.1",
     "express-session": "^1.18.1",

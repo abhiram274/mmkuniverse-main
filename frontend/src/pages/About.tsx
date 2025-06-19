@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import CommunityTimestamp from "@/components/community/CommunityTimestamp";
+import ContactForm from "@/components/ContactForm";
 
 interface TeamMember {
   name: string;
