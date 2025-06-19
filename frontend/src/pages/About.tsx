@@ -165,6 +165,14 @@ const About = () => {
               </div>
             </div>
           </div>
+
+            {/* Contact Us Section */}
+          <div className="glass-card p-8 rounded-xl">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Contact <span className="text-gradient-primary">Us</span>
+            </h2>
+            <ContactForm />
+          </div>
         </div>
       </main>
       <Footer />
