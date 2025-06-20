@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { GoogleLogin } from "@react-oauth/google";
-import jwt_decode from "jwt-decode";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+
 
 
 const Login = () => {
@@ -77,37 +78,47 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+type GoogleJwtPayload = {
+  email: string;
+  name: string;
+  sub: string;
+  picture?: string;
+};
+ const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+  if (!credentialResponse.credential) {
+    toast.error("Google credential missing");
+    return;
+  }
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    const decoded: any = jwt_decode(credentialResponse.credential);
-    const email = decoded.email;
+  const decoded = jwtDecode<GoogleJwtPayload>(credentialResponse.credential);
+  const email = decoded.email;
 
-    try {
-      const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/google-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email }),
-      });
+  try {
+    const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/google-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("MMK_U_token", data.token);
-        localStorage.setItem("MMK_U_user_id", data.user_id);
-        localStorage.setItem("MMK_U_name", data.name);
-        localStorage.setItem("MMK_U_email", data.email);
+    if (response.ok) {
+      localStorage.setItem("MMK_U_token", data.token);
+      localStorage.setItem("MMK_U_user_id", data.user_id);
+      localStorage.setItem("MMK_U_name", data.name);
+      localStorage.setItem("MMK_U_email", data.email);
 
-        toast.success("Logged in with Google!");
-        navigate("/home");
-      } else {
-        toast.error(data.error || "Google login failed.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Google login error.");
+      toast.success("Logged in with Google!");
+      navigate("/home");
+    } else {
+      toast.error(data.error || "Google login failed.");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("Google login error.");
+  }
+};
 
 
 
