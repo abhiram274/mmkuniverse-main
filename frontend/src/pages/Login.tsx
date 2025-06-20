@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-
+import { GoogleLogin } from "@react-oauth/google";
+import jwt_decode from "jwt-decode";
 
 
 const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const [formData, setFormData] = useState({
@@ -41,7 +42,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setIsLoading(true);
     try {
       const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/login", {
         method: "POST",
@@ -58,7 +59,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-         localStorage.setItem("MMK_U_token", data.token);
+        localStorage.setItem("MMK_U_token", data.token);
         localStorage.setItem("MMK_U_user_id", data.user_id);
         localStorage.setItem("MMK_U_name", data.name);
         localStorage.setItem("MMK_U_email", data.email);
@@ -66,13 +67,50 @@ const Login = () => {
         toast.success("Logged in successfully");
         navigate("/home");
       } else {
-        alert(data.error || data.message || "Login failed.");
+        toast.error(data.error || data.message || "Login failed.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      alert("Something went wrong.");
+      toast.error("Something went wrong. Please try again.");
+    }
+    finally {
+      setIsLoading(false);
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    const decoded: any = jwt_decode(credentialResponse.credential);
+    const email = decoded.email;
+
+    try {
+      const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/google-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("MMK_U_token", data.token);
+        localStorage.setItem("MMK_U_user_id", data.user_id);
+        localStorage.setItem("MMK_U_name", data.name);
+        localStorage.setItem("MMK_U_email", data.email);
+
+        toast.success("Logged in with Google!");
+        navigate("/home");
+      } else {
+        toast.error(data.error || "Google login failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login error.");
+    }
+  };
+
+
+
   return (
     <div className="min-h-screen flex">
       {/* Left side - Form */}
@@ -150,10 +188,61 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-mmk-purple hover:bg-mmk-purple/90 text-white py-6"
+                disabled={isLoading}
               >
-                Sign in
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </div>
+
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center my-4">
+              <span className="absolute left-0 w-full h-px bg-white/10" />
+              <span className="bg-mmk-dark px-3 text-gray-400 relative z-10 text-sm">or</span>
+            </div>
+
+
+
+            {/* Sign in with Google button */}
+            <div className="my-2 w-full relative">
+              <Button
+                type="button"
+                className="
+                  w-full flex items-center justify-center gap-2
+                  border border-gray-200 shadow-none
+                  bg-white text-gray-900 text-lg font-semibold px-4 py-3 rounded-lg
+                  hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-mmk-amber/40
+                  transition duration-150
+                "
+                disabled
+                aria-label="Sign in with Google"
+                tabIndex={0}
+              >
+                {/* Google icon as before */}
+                <svg width={24} height={24} viewBox="0 0 48 48" className="mr-2" style={{ display: 'inline' }}>
+                  <g>
+                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.13 1.53 7.54 2.81l5.51-5.51C34.42 3.81 29.68 1.5 24 1.5 14.82 1.5 6.95 6.92 3.05 14.08l6.73 5.23C11.65 13.84 17.32 9.5 24 9.5z"></path>
+                    <path fill="#34A853" d="M46.53 24.57c0-1.94-.17-3.8-.48-5.57H24v7.5h12.74c-.25 1.36-.96 3.16-2.7 4.45l6.69 5.19c3.16-2.81 4.8-6.95 4.8-11.57z"></path>
+                    <path fill="#FBBC05" d="M9.78 28.81A14.46 14.46 0 019.5 24c0-1.64.28-3.22.76-4.81l-6.73-5.23A22.45 22.45 0 012.5 24c0 3.64.88 7.08 2.53 10.04l6.75-5.23z"></path>
+                    <path fill="#EA4335" d="M24 46.5c6.52 0 12-2.15 16.01-5.86l-6.75-5.23c-2.09 1.53-4.93 2.49-9.26 2.49-7.14 0-13.23-4.58-15.4-10.8l-6.75 5.23C6.95 41.07 14.82 46.5 24 46.5z"></path>
+                    <path fill="none" d="M2.5 2.5h43v43h-43z"></path>
+                  </g>
+                </svg>
+                <span>Sign in with Google</span>
+              </Button>
+              {/* Real GoogleLogin hidden but clickable */}
+              <div className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error("Google Sign-In Failed")}
+                  theme="outline"
+                  size="large"
+                  shape="rectangular"
+                  text="signin_with"
+                />
+              </div>
+            </div>
+
 
             <div className="text-center">
               <p className="text-gray-400">

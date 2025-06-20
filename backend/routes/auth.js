@@ -15,19 +15,27 @@ function generateOTP() {
 }
 
 
-//send-otp 
 
-// ⬅️ OTP Request Route
 router.post('/send-otp', async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ error: "Invalid email address" });
+    const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    // ✅ Verify email is real using API
+    const emailValidationRes = await fetch(`https://apilayer.net/api/check?access_key=81453175f56d38c0276511955de1f17f
+&email=${email}`);
+    const emailData = await emailValidationRes.json();
+
+    if (!emailData.format_valid || !emailData.smtp_check) {
+      return res.status(400).json({ error: "This email address appears invalid or unreachable." });
     }
 
     const otp = generateOTP();
-    otpStore.set(email, otp);
+    otpStore.set(email, { code: otp, expiresAt: Date.now() + 5 * 60 * 1000 });
 
     await sendOTPviaEmail(email, otp);
 
@@ -42,13 +50,8 @@ router.post('/send-otp', async (req, res) => {
 
 
 
-
-
-
 // Generate custom user_id like MMK_U_1, MMK_U_2...
 const generateUserId = (id) => `MMK_U_${id}`;
-
-
 
 
 // Signup
@@ -123,7 +126,33 @@ router.post('/login', async (req, res) => {
   }
 });
 
+//google login
+router.post('/google-login', async (req, res) => {
+  const { email } = req.body;
 
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  try {
+    const [results] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Email not found. Please sign up first.' });
+    }
+
+    const user = results[0];
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: 'Google login successful',
+      token,
+      user_id: user.user_id,
+      name: user.name,
+      email: user.email
+    });
+  } catch (err) {
+    console.error('Google login error:', err);
+    return res.status(500).json({ error: 'Server error during Google login' });
+  }
+});
 
 
 
@@ -148,40 +177,6 @@ catch (err) {
 });
 
 
-// ➤ Logout
-// router.post('/logout', (req, res) => {
-//   return res.json({ message: 'Logged out (client must remove token)' });
-// });
-
-
-
-//admin_session
-// Check Session
-// router.get('/admin_session', (req, res) => {
-//   if (req.session.admin) {
-//     return res.json({ loggedIn: true, admin: req.session.admin });
-//   } else {
-//     return res.json({ loggedIn: false });
-//   }
-// });
-
-//admin_logout
-
-// router.post('/admin_logout', (req, res) => {
-//   req.session.destroy();
-//   res.json({ message: 'Logged out' });
-// });
-
-
-
-// Check Session
-// router.get('/session', (req, res) => {
-//   if (req.session.user) {
-//     return res.json({ loggedIn: true, user: req.session.user });
-//   } else {
-//     return res.json({ loggedIn: false });
-//   }
-// });
 
 
 router.get('/session', (req, res) => {
@@ -201,21 +196,6 @@ router.get('/session', (req, res) => {
     return res.status(401).json({ loggedIn: false });
   }
 });
-// Logout
-// Logout Route (JWT-based)
-// router.post('/logout', (req, res) => {
-//   // Optional: Invalidate JWT on frontend (by deleting cookie/localStorage)
-  
-//   // If you're setting JWT in a cookie, clear it like this:
-//   res.clearCookie('token', {
-//     httpOnly: true,
-//     secure: true,
-//     sameSite: 'None',
-//   });
-
-//   return res.json({ message: 'Logged out successfully' });
-// });
-
 
 
 
@@ -276,8 +256,6 @@ router.post('/forgot-password/reset', async (req, res) => {
     return res.status(500).json({ error: "Server error while resetting password" });
   }
 });
-
-
 
 
 
