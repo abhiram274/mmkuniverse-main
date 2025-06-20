@@ -35,29 +35,35 @@ const Login = () => {
 
 
 
-// Inside your Login component
+
 const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-  if (!credentialResponse.credential) {
-    toast.error("Google login failed");
-    return;
-  }
-
   try {
-    const decoded: any = jwtDecode(credentialResponse.credential);
-    const email = decoded.email;
+    if (!credentialResponse.credential) {
+      toast.error("Google login failed: No credential");
+      return;
+    }
 
-    const res = await fetch("https://mmkuniverse-main.onrender.com/api/auth/google-login", {
+    const decoded = jwtDecode<{ email: string, name: string }>(credentialResponse.credential);
+    const email = decoded.email;
+    const name = decoded.name;
+
+    if (!email) {
+      toast.error("Unable to extract email from Google account.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    const response = await fetch("https://mmkuniverse-main.onrender.com/api/auth/google-login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, name }),
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (res.ok) {
+    if (response.ok) {
       localStorage.setItem("MMK_U_token", data.token);
       localStorage.setItem("MMK_U_user_id", data.user_id);
       localStorage.setItem("MMK_U_name", data.name);
@@ -65,14 +71,15 @@ const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
       toast.success("Logged in with Google");
       navigate("/home");
     } else {
-      toast.error(data.error || "Login failed");
+      toast.error(data.error || "Google login failed");
     }
   } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
+    console.error("Google login error:", err);
+    toast.error("Something went wrong during Google login.");
+  } finally {
+    setIsLoading(false);
   }
 };
-
 
 
   const handleCheckboxChange = (checked: boolean) => {
@@ -217,10 +224,13 @@ const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
 
 
             {/* Sign in with Google button */}
-            {/* <div className="my-2 w-full flex justify-center">
-  <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => toast.error("Google login failed")} />
+            <div className="my-2 w-full flex justify-center">
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => toast.error("Google login failed")}
+  />
 </div>
- */}
+
 
 
 
