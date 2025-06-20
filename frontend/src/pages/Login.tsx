@@ -215,7 +215,7 @@ type GoogleJwtPayload = {
 
 
             {/* Sign in with Google button */}
-            <div className="my-2 w-full relative">
+            {/* <div className="my-2 w-full relative">
               <Button
                 type="button"
                 className="
@@ -230,7 +230,7 @@ type GoogleJwtPayload = {
                 tabIndex={0}
               >
                 {/* Google icon as before */}
-                <svg width={24} height={24} viewBox="0 0 48 48" className="mr-2" style={{ display: 'inline' }}>
+                {/* <svg width={24} height={24} viewBox="0 0 48 48" className="mr-2" style={{ display: 'inline' }}>
                   <g>
                     <path fill="#4285F4" d="M24 9.5c3.54 0 6.13 1.53 7.54 2.81l5.51-5.51C34.42 3.81 29.68 1.5 24 1.5 14.82 1.5 6.95 6.92 3.05 14.08l6.73 5.23C11.65 13.84 17.32 9.5 24 9.5z"></path>
                     <path fill="#34A853" d="M46.53 24.57c0-1.94-.17-3.8-.48-5.57H24v7.5h12.74c-.25 1.36-.96 3.16-2.7 4.45l6.69 5.19c3.16-2.81 4.8-6.95 4.8-11.57z"></path>
@@ -241,18 +241,22 @@ type GoogleJwtPayload = {
                 </svg>
                 <span>Sign in with Google</span>
               </Button>
-              {/* Real GoogleLogin hidden but clickable */}
-              <div className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => toast.error("Google Sign-In Failed")}
-                  theme="outline"
-                  size="large"
-                  shape="rectangular"
-                  text="signin_with"
-                />
-              </div>
-            </div>
+           
+            </div>  */}
+
+
+  <div className="flex justify-center w-full">
+  <GoogleLogin
+    onSuccess={handleGoogleSuccess}
+    onError={() => toast.error("Google Sign-In Failed")}
+    theme="outline"
+    size="large"
+    shape="rectangular"
+    text="signin_with"
+  />
+</div>
+
+
 
 
             <div className="text-center">
