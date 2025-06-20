@@ -144,8 +144,17 @@ const Home = () => {
 
       if (data.alreadyJoined) {
         toast.info("You have already joined this Program.");
+
+        // ✅ Update isEnrolled status locally
+        setFeaturedPrograms((prev) =>
+          prev.map((p) =>
+            p.id === programId ? { ...p, isEnrolled: true } : p
+          )
+        );
+
         return;
       }
+
 
       const program = featuredPrograms.find(p => p.id === programId);
       if (program) {
@@ -154,6 +163,15 @@ const Home = () => {
 
       localStorage.setItem("MMK_P_program_id", programId.toString());
       localStorage.setItem("MMK_P_program_name", programName);
+
+
+      // ✅ Update isEnrolled locally for immediate UI feedback
+      setFeaturedPrograms((prev) =>
+        prev.map((p) =>
+          p.id === programId ? { ...p, isEnrolled: true } : p
+        )
+      );
+
 
       setTimeout(() => {
         navigate("/join-program-payment");
@@ -268,79 +286,53 @@ const Home = () => {
       <section className="py-20 px-4 bg-gradient-to-b from-transparent via-mmk-purple/5 to-transparent">
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold">Featured <span className="text-gradient-primary">Programs</span></h2>
-            <Link to="/programs" className="text-mmk-purple hover:text-mmk-purple/80 flex items-center">
+            <h2 className="text-3xl md:text-4xl font-bold">
+              Featured <span className="text-gradient-primary">Programs</span>
+            </h2>
+            <Link
+              to="/programs"
+              className="text-mmk-purple hover:text-mmk-purple/80 flex items-center"
+            >
               View All
-              <svg xmlns="http://www.w3.org/2000/svg" className="ml-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="ml-1"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </Link>
           </div>
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredPrograms.map((program) => (
-              // <ProgramCard key={program.id} {...program} onEnroll={() => handleEnroll(program.id, program.title)} />
-
-              <div key={program.id}>
-                <ProgramCard
-                  location={""} {...program}
-                  // startDate={program.start_date}
-                  // endDate={program.end_date}
-                  startDate={formatDateDisplay(program.start_date)}
-                  endDate={formatDateDisplay(program.end_date)}
-
-                  onEnroll={() => handleEnroll(program.id, program.title)}
-
-                  isCertified={Boolean(program.isCertified)}
-                  isFree={Boolean(program.isFree)}
-                  isLive={Boolean(program.isLive)}
-                  isEnrolled={Boolean(program.isEnrolled)} // ✅ Add this line back
-
-                  disabled={
-                    program.isEnrolled ||
-                    new Date() > new Date(program.end_date) ||  // after event end
-                    new Date() < new Date(program.start_date) ||  // before event start
-                    program.attendees >= program.attendance_limit  // attendee limit reached
-                  }
-                />
-
-              </div>
-
-            ))}
-          </div> */}
-
-          <div className="container mx-auto">
           {featuredPrograms.length > 0 ? (
-            <>
-            
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                {featuredPrograms.map((program) => (
-                  <div key={program.id}>
-                    <ProgramCard
-                      location={""} {...program}
-                      // startDate={program.start_date}
-                      // endDate={program.end_date}
-                      startDate={formatDateDisplay(program.start_date)}
-                      endDate={formatDateDisplay(program.end_date)}
-
-                      onEnroll={() => handleEnroll(program.id, program.title)}
-                      isCertified={Boolean(program.isCertified)}
-                      isFree={Boolean(program.isFree)}
-                      isLive={Boolean(program.isLive)}
-                      // isEnrolled={Boolean(program.isEnrolled)}
-                      disabled={
-                         program.isEnrolled ||
-                        new Date() > new Date(program.end_date) ||  // after event end
-                        new Date() < new Date(program.start_date) ||  // before event start
-                        program.attendees >= program.attendance_limit  // attendee limit reached
-                      }
-                    />
-
-                  </div>
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredPrograms.map((program) => (
+                <div key={program.id}>
+                  <ProgramCard
+                    location=""
+                    {...program}
+                    startDate={formatDateDisplay(program.start_date)}
+                    endDate={formatDateDisplay(program.end_date)}
+                    onEnroll={() => handleEnroll(program.id, program.title)}
+                    isCertified={Boolean(program.isCertified)}
+                    isFree={Boolean(program.isFree)}
+                    isLive={Boolean(program.isLive)}
+                    isEnrolled={Boolean(program.isEnrolled)}
+                    disabled={
+                      program.isEnrolled ||
+                      new Date() > new Date(program.end_date) ||
+                      new Date() < new Date(program.start_date) ||
+                      program.attendees >= program.attendance_limit
+                    }
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-16">
               <h3 className="text-2xl font-semibold mb-2">No programs found</h3>
@@ -348,8 +340,8 @@ const Home = () => {
             </div>
           )}
         </div>
-        </div>
       </section>
+
 
       {/* Join Community Section */}
       <section className="py-20 px-4 relative">
