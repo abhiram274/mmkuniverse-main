@@ -29,18 +29,20 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-mmk-purple">Home</Link></li>
               <li><Link to="/programs" className="text-gray-400 hover:text-mmk-purple">Programs</Link></li>
-              <li><Link to="/community" className="text-gray-400 hover:text-mmk-purple">Community</Link></li>
-              <li><Link to="/freelance" className="text-gray-400 hover:text-mmk-purple">Freelance</Link></li>
+                            <li><Link to="/about" className="text-gray-400 hover:text-mmk-purple">About Us</Link></li>
+
+              {/* <li><Link to="/community" className="text-gray-400 hover:text-mmk-purple">Community</Link></li>
+              <li><Link to="/freelance" className="text-gray-400 hover:text-mmk-purple">Freelance</Link></li> */}
             </ul>
           </div>
           
           <div>
             <h4 className="text-white font-semibold mb-4">Resources</h4>
             <ul className="space-y-2">
-              <li><Link to="#" className="text-gray-400 hover:text-mmk-purple">Blog</Link></li>
-              <li><Link to="#" className="text-gray-400 hover:text-mmk-purple">Documentation</Link></li>
-              <li><Link to="#" className="text-gray-400 hover:text-mmk-purple">FAQ</Link></li>
-              <li><Link to="#" className="text-gray-400 hover:text-mmk-purple">Support</Link></li>
+              <li><Link to="" className="text-gray-400 hover:text-mmk-purple">Blog</Link></li>
+              <li><Link to="" className="text-gray-400 hover:text-mmk-purple">Documentation</Link></li>
+              <li><Link to="" className="text-gray-400 hover:text-mmk-purple">FAQ</Link></li>
+              <li><Link to="" className="text-gray-400 hover:text-mmk-purple">Support</Link></li>
             </ul>
           </div>
           
