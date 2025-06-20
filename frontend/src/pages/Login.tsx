@@ -10,7 +10,12 @@ import { toast } from "sonner";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
-
+type GoogleJwtPayload = {
+  email: string;
+  name: string;
+  sub: string;
+  picture?: string;
+};
 
 const Login = () => {
 
@@ -78,12 +83,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-type GoogleJwtPayload = {
-  email: string;
-  name: string;
-  sub: string;
-  picture?: string;
-};
+
  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
   if (!credentialResponse.credential) {
     toast.error("Google credential missing");
