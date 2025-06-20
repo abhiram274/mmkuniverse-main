@@ -277,36 +277,77 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredPrograms.length === 0 ? (
-  <p className="text-center text-gray-400">No programs available at the moment. Please check back later.</p>
-) : (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-    {featuredPrograms.map((program) => (
-      <div key={program.id}>
-        <ProgramCard
-          location=""
-          {...program}
-          startDate={formatDateDisplay(program.start_date)}
-          endDate={formatDateDisplay(program.end_date)}
-          onEnroll={() => handleEnroll(program.id, program.title)}
-          isCertified={Boolean(program.isCertified)}
-          isFree={Boolean(program.isFree)}
-          isLive={Boolean(program.isLive)}
-          isEnrolled={Boolean(program.isEnrolled)}
-          disabled={
-            program.isEnrolled ||
-            new Date() > new Date(program.end_date) ||
-            new Date() < new Date(program.start_date) ||
-            program.attendees >= program.attendance_limit
-          }
-        />
-      </div>
-    ))}
-  </div>
-)}
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredPrograms.map((program) => (
+              // <ProgramCard key={program.id} {...program} onEnroll={() => handleEnroll(program.id, program.title)} />
 
-          </div>
+              <div key={program.id}>
+                <ProgramCard
+                  location={""} {...program}
+                  // startDate={program.start_date}
+                  // endDate={program.end_date}
+                  startDate={formatDateDisplay(program.start_date)}
+                  endDate={formatDateDisplay(program.end_date)}
+
+                  onEnroll={() => handleEnroll(program.id, program.title)}
+
+                  isCertified={Boolean(program.isCertified)}
+                  isFree={Boolean(program.isFree)}
+                  isLive={Boolean(program.isLive)}
+                  isEnrolled={Boolean(program.isEnrolled)} // ✅ Add this line back
+
+                  disabled={
+                    program.isEnrolled ||
+                    new Date() > new Date(program.end_date) ||  // after event end
+                    new Date() < new Date(program.start_date) ||  // before event start
+                    program.attendees >= program.attendance_limit  // attendee limit reached
+                  }
+                />
+
+              </div>
+
+            ))}
+          </div> */}
+
+          <div className="container mx-auto">
+          {featuredPrograms.length > 0 ? (
+            <>
+            
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                {featuredPrograms.map((program) => (
+                  <div key={program.id}>
+                    <ProgramCard
+                      location={""} {...program}
+                      // startDate={program.start_date}
+                      // endDate={program.end_date}
+                      startDate={formatDateDisplay(program.start_date)}
+                      endDate={formatDateDisplay(program.end_date)}
+
+                      onEnroll={() => handleEnroll(program.id, program.title)}
+                      isCertified={Boolean(program.isCertified)}
+                      isFree={Boolean(program.isFree)}
+                      isLive={Boolean(program.isLive)}
+                      // isEnrolled={Boolean(program.isEnrolled)}
+                      disabled={
+                         program.isEnrolled ||
+                        new Date() > new Date(program.end_date) ||  // after event end
+                        new Date() < new Date(program.start_date) ||  // before event start
+                        program.attendees >= program.attendance_limit  // attendee limit reached
+                      }
+                    />
+
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-semibold mb-2">No programs found</h3>
+              <p className="text-gray-400 mb-8">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </div>
         </div>
       </section>
 
