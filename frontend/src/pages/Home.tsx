@@ -35,6 +35,9 @@ const formatDateDisplay = (isoString) => {
 
 
 const Home = () => {
+  const [programsData, setProgramsData] = useState<Program[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+
   const [userName, setUserName] = useState<string | null>(null);
   const [featuredPrograms, setFeaturedPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
@@ -72,6 +75,56 @@ const Home = () => {
       if (savedName) setUserName(savedName);
     }
   }, [userName]);
+
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const storedId = localStorage.getItem("MMK_U_user_id");
+        let userId: number | null = null;
+        if (storedId) {
+          userId = parseInt(storedId.replace("MMK_U_", ""), 10);
+          if (isNaN(userId)) userId = null;
+        }
+
+        // Pass user_id as query param if available
+        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
+        const res = await axios.get(url);
+
+        const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
+
+
+        const data: Program[] = res.data.map((p: Program) => {
+          const imagePath = p.image && !p.image.startsWith("http")
+            ? `${CLOUDINARY_BASE}${p.image}`
+            : p.image;
+
+          return {
+            ...p,
+            image: imagePath || "",
+            isFree: Boolean(p.isFree),
+            isCertified: Boolean(p.isCertified),
+            isLive: Boolean(p.isLive),
+            isEnrolled: Boolean(p.isEnrolled),
+            end_date: p.end_date ?? undefined,
+            start_date: p.start_date ?? undefined,
+          };
+        });
+
+
+        setProgramsData(data);
+
+        const uniqueCategories = [...new Set(data.map((p) => p.category))];
+        setCategories(uniqueCategories);
+      } catch (err) {
+        console.error("Error fetching programs:", err);
+      }
+    };
+
+    fetchPrograms();
+  }, []);
+
+  
 
   const handleEnroll = async (programId: number, programName: string) => {
     const userId = localStorage.getItem("MMK_U_user_id");
@@ -212,7 +265,7 @@ const Home = () => {
       </section>
 
       {/* Featured Programs */}
-   <section className="py-20 px-4 bg-gradient-to-b from-transparent via-mmk-purple/5 to-transparent">
+      <section className="py-20 px-4 bg-gradient-to-b from-transparent via-mmk-purple/5 to-transparent">
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold">Featured <span className="text-gradient-primary">Programs</span></h2>
@@ -227,31 +280,31 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredPrograms.map((program) => (
               // <ProgramCard key={program.id} {...program} onEnroll={() => handleEnroll(program.id, program.title)} />
-           
-           <div key={program.id}>
-                               <ProgramCard
-                                 location={""} {...program}
-                                 // startDate={program.start_date}
-                                 // endDate={program.end_date}
-                                 startDate={formatDateDisplay(program.start_date)}
-                                 endDate={formatDateDisplay(program.end_date)}
-           
-                                 onEnroll={() => handleEnroll(program.id, program.title)}
-                                 isCertified={Boolean(program.isCertified)}
-                                 isFree={Boolean(program.isFree)}
-                                 isLive={Boolean(program.isLive)}
-                                 // isEnrolled={Boolean(program.isEnrolled)}
-                                 disabled={
-                                    program.isEnrolled ||
-                                   new Date() > new Date(program.end_date) ||  // after event end
-                                   new Date() < new Date(program.start_date) ||  // before event start
-                                   program.attendees >= program.attendance_limit  // attendee limit reached
-                                 }
-                               />
-           
-                             </div>
-           
-           ))}
+
+              <div key={program.id}>
+                <ProgramCard
+                  location={""} {...program}
+                  // startDate={program.start_date}
+                  // endDate={program.end_date}
+                  startDate={formatDateDisplay(program.start_date)}
+                  endDate={formatDateDisplay(program.end_date)}
+
+                  onEnroll={() => handleEnroll(program.id, program.title)}
+                  isCertified={Boolean(program.isCertified)}
+                  isFree={Boolean(program.isFree)}
+                  isLive={Boolean(program.isLive)}
+                  // isEnrolled={Boolean(program.isEnrolled)}
+                  disabled={
+                    program.isEnrolled ||
+                    new Date() > new Date(program.end_date) ||  // after event end
+                    new Date() < new Date(program.start_date) ||  // before event start
+                    program.attendees >= program.attendance_limit  // attendee limit reached
+                  }
+                />
+
+              </div>
+
+            ))}
           </div>
         </div>
       </section>
