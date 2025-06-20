@@ -587,7 +587,7 @@ const Events = () => {
             <div className="space-y-4">
               <div className="flex gap-4">
                 <Calendar className="h-5 w-5 text-mmk-purple" />
-                <span>{selectedEvent?.date}</span>
+                <span>{formatDateDisplay(selectedEvent?.date)}</span>
               </div>
               <div className="flex gap-4">
                 <Clock className="h-5 w-5 text-mmk-amber" />
