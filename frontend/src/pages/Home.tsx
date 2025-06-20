@@ -27,6 +27,13 @@ interface Program {
   attendance_limit: number;
 }
 
+
+const formatDateDisplay = (isoString) => {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+};
+
+
 const Home = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [featuredPrograms, setFeaturedPrograms] = useState<Program[]>([]);
@@ -219,8 +226,32 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredPrograms.map((program) => (
-              <ProgramCard key={program.id} {...program} onEnroll={() => handleEnroll(program.id, program.title)} />
-            ))}
+              // <ProgramCard key={program.id} {...program} onEnroll={() => handleEnroll(program.id, program.title)} />
+           
+           <div key={program.id}>
+                               <ProgramCard
+                                 location={""} {...program}
+                                 // startDate={program.start_date}
+                                 // endDate={program.end_date}
+                                 startDate={formatDateDisplay(program.start_date)}
+                                 endDate={formatDateDisplay(program.end_date)}
+           
+                                 onEnroll={() => handleEnroll(program.id, program.title)}
+                                 isCertified={Boolean(program.isCertified)}
+                                 isFree={Boolean(program.isFree)}
+                                 isLive={Boolean(program.isLive)}
+                                 // isEnrolled={Boolean(program.isEnrolled)}
+                                 disabled={
+                                    program.isEnrolled ||
+                                   new Date() > new Date(program.end_date) ||  // after event end
+                                   new Date() < new Date(program.start_date) ||  // before event start
+                                   program.attendees >= program.attendance_limit  // attendee limit reached
+                                 }
+                               />
+           
+                             </div>
+           
+           ))}
           </div>
         </div>
       </section>
