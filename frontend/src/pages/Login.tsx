@@ -217,10 +217,10 @@ const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
 
 
             {/* Sign in with Google button */}
-            <div className="my-2 w-full flex justify-center">
+            {/* <div className="my-2 w-full flex justify-center">
   <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => toast.error("Google login failed")} />
 </div>
-
+ */}
 
 
 

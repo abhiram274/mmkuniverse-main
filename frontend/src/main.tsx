@@ -1,39 +1,16 @@
-// import { createRoot } from 'react-dom/client'
-// import App from './App.tsx'
-// import './index.css'
-
-// createRoot(document.getElementById("root")!).render(<App />);
-
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
-createRoot(document.getElementById("root")!).render(
-  <GoogleOAuthProvider clientId="715736192011-07ol75qt1qse82hqtq8rhsije9qf8pjk.apps.googleusercontent.com">
-    <App />
-  </GoogleOAuthProvider>
-);
+createRoot(document.getElementById("root")!).render(<App />);
 
-// // main.tsx
-// import React from 'react';
-// import { createRoot } from 'react-dom/client';
-// import App from './App.tsx';
-// import './index.css';
+// import { createRoot } from 'react-dom/client'
+// import App from './App.tsx'
+// import './index.css'
 // import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// const CLIENT_ID = '715736192011-07ol75qt1qse82hqtq8rhsije9qf8pjk.apps.googleusercontent.com';
-
-// const rootElement = document.getElementById('root');
-
-// if (!rootElement) {
-//   throw new Error("Root element not found");
-// }
-
-// createRoot(rootElement).render(
-//   <React.StrictMode>
-//     <GoogleOAuthProvider clientId={CLIENT_ID}>
-//       <App />
-//     </GoogleOAuthProvider>
-//   </React.StrictMode>
+// createRoot(document.getElementById("root")!).render(
+//   <GoogleOAuthProvider clientId="715736192011-07ol75qt1qse82hqtq8rhsije9qf8pjk.apps.googleusercontent.com">
+//     <App />
+//   </GoogleOAuthProvider>
 // );
