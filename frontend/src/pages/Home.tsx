@@ -55,7 +55,7 @@ const Home = () => {
         }
 
         // Pass user_id as query param if available
-        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
+        const url = storedId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
         const res = await axios.get(url);
 
         const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
