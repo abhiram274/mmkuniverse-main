@@ -312,6 +312,9 @@ const Events = () => {
               </div>
             </div>
           </section>
+ <div className="text-gray-400 mb-6">
+  Showing {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+</div>
 
           {loading ? (
             <div className="text-center text-gray-400 py-10">Loading events...</div>
@@ -331,8 +334,11 @@ const Events = () => {
                 Host an Event
               </Button>
             </div>
+            
           ) : (
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
               {filteredEvents.map((event) => (
                 <Card key={event.id} className="bg-secondary/40 border-white/10 overflow-hidden hover:border-mmk-purple/60 transition-all">
                   {event.imageUrl && (
