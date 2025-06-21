@@ -51,6 +51,8 @@ const Programs = () => {
   const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
+         window.scrollTo(0, 0);
+    
     const fetchPrograms = async () => {
       try {
         const storedId = localStorage.getItem("MMK_U_user_id");
@@ -66,16 +68,7 @@ const Programs = () => {
 
         const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
 
-        // const data: Program[] = res.data.map((p: Program) => ({
-        //   ...p,
-        //   image: p.image || "",
-        //   isFree: Boolean(p.isFree),
-        //   isCertified: Boolean(p.isCertified),
-        //   isLive: Boolean(p.isLive),
-        //   isEnrolled: Boolean(p.isEnrolled),
-        //   end_date: p.end_date ?? undefined,
-        //   start_date: p.start_date ?? undefined,
-        // }));
+       
 
         const data: Program[] = res.data.map((p: Program) => {
           const imagePath = p.image && !p.image.startsWith("http")

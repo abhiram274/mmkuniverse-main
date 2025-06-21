@@ -47,13 +47,35 @@ const Home = () => {
   useEffect(() => {
     const fetchRecentPrograms = async () => {
       try {
-        const res = await axios.get("https://mmkuniverse-main.onrender.com/programs/non-complete");
+        const storedId = localStorage.getItem("MMK_U_user_id");
+        let userId: number | null = null;
+        if (storedId) {
+          userId = parseInt(storedId.replace("MMK_U_", ""), 10);
+          if (isNaN(userId)) userId = null;
+        }
+
+        // Pass user_id as query param if available
+        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
+        const res = await axios.get(url);
 
         const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
-        const data: Program[] = res.data.map((p: Program) => ({
-          ...p,
-          image: p.image && !p.image.startsWith("http") ? `${CLOUDINARY_BASE}${p.image}` : p.image,
-        }));
+
+   const data: Program[] = res.data.map((p: Program) => {
+          const imagePath = p.image && !p.image.startsWith("http")
+            ? `${CLOUDINARY_BASE}${p.image}`
+            : p.image;
+
+          return {
+            ...p,
+            image: imagePath || "",
+            isFree: Boolean(p.isFree),
+            isCertified: Boolean(p.isCertified),
+            isLive: Boolean(p.isLive),
+            isEnrolled: Boolean(p.isEnrolled),
+            end_date: p.end_date ?? undefined,
+            start_date: p.start_date ?? undefined,
+          };
+        });
 
         const sorted = data
           .filter((p) => p.start_date)
@@ -76,53 +98,6 @@ const Home = () => {
     }
   }, [userName]);
 
-
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const storedId = localStorage.getItem("MMK_U_user_id");
-        let userId: number | null = null;
-        if (storedId) {
-          userId = parseInt(storedId.replace("MMK_U_", ""), 10);
-          if (isNaN(userId)) userId = null;
-        }
-
-        // Pass user_id as query param if available
-        const url = userId ? `https://mmkuniverse-main.onrender.com/programs/non-complete?user_id=${storedId}` : "https://mmkuniverse-main.onrender.com/programs/non-complete";
-        const res = await axios.get(url);
-
-        const CLOUDINARY_BASE = "https://res.cloudinary.com/dxf8n44lz/image/upload/";
-
-
-        const data: Program[] = res.data.map((p: Program) => {
-          const imagePath = p.image && !p.image.startsWith("http")
-            ? `${CLOUDINARY_BASE}${p.image}`
-            : p.image;
-
-          return {
-            ...p,
-            image: imagePath || "",
-            isFree: Boolean(p.isFree),
-            isCertified: Boolean(p.isCertified),
-            isLive: Boolean(p.isLive),
-            isEnrolled: Boolean(p.isEnrolled),
-            end_date: p.end_date ?? undefined,
-            start_date: p.start_date ?? undefined,
-          };
-        });
-
-
-        setProgramsData(data);
-
-        const uniqueCategories = [...new Set(data.map((p) => p.category))];
-        setCategories(uniqueCategories);
-      } catch (err) {
-        console.error("Error fetching programs:", err);
-      }
-    };
-
-    fetchPrograms();
-  }, []);
 
 
 
@@ -322,7 +297,7 @@ const Home = () => {
                     isCertified={Boolean(program.isCertified)}
                     isFree={Boolean(program.isFree)}
                     isLive={Boolean(program.isLive)}
-                    isEnrolled={Boolean(program.isEnrolled)}
+                    // isEnrolled={Boolean(program.isEnrolled)}
                     disabled={
                       program.isEnrolled ||
                       new Date() > new Date(program.end_date) ||
